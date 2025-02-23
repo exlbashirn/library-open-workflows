@@ -16,8 +16,6 @@ export class ConfigurationComponent implements OnInit {
   forms: N8nFormItem[] = [];
   saving = false;
 
-  private changed = false;
-
   constructor(private appService: AppService, public dialog: MatDialog) {
     this.appService.setTitle('Configuration');
   }
@@ -25,9 +23,6 @@ export class ConfigurationComponent implements OnInit {
   ngOnInit(): void {
     this.appService.getForms().subscribe(forms => {
       this.forms = forms ?? [];
-    });
-    this.appService.getFormTriggersFromInstance().subscribe(workflows => {
-
     });
   }
 
@@ -44,7 +39,7 @@ export class ConfigurationComponent implements OnInit {
   }
 
   onEntryEdit(form: N8nFormItem) {
-    this.dialog.open(EditDialogComponent, { minWidth: '50%', maxWidth: '500px', data: { form } })
+    this.dialog.open(EditDialogComponent, { minWidth: '90vw', maxHeight: '95vh', data: { form } })
       .afterClosed().pipe(
         filter(res => !!res),
         concatMap(res => this.appService.confirmNoRemoteChanges().pipe(map(() => res))),
@@ -55,7 +50,7 @@ export class ConfigurationComponent implements OnInit {
   }
 
   onEntryAdd() {
-    this.dialog.open(EditDialogComponent, { minWidth: '50%', maxWidth: '500px', data: { form: {} } })
+    this.dialog.open(EditDialogComponent, { minWidth: '90vw', maxHeight: '95vh', data: { form: {} } })
       .afterClosed().pipe(
         filter(res => !!res),
         concatMap(res => this.appService.confirmNoRemoteChanges().pipe(map(() => res)))

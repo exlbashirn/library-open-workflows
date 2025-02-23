@@ -1,37 +1,63 @@
 <app-top-menu [disabled]="saving">
     <ng-container buttons>
-        <!-- <button mat-flat-button [disabled]="!changed || saving" color="primary" (click)="onSave()">
-            <mat-icon *ngIf="!saving">save</mat-icon>
-            <mat-spinner diameter="16" *ngIf="saving"></mat-spinner>
-        </button> -->
         <button mat-flat-button [disabled]="saving" color="primary" (click)="onEntryAdd()">
-            <mat-icon *ngIf="!saving">add</mat-icon>
+            @if (saving) {
             <mat-spinner diameter="30" *ngIf="saving"></mat-spinner>
+            } @else {
+            <mat-icon style="margin: 0">add</mat-icon>
+            }
         </button>
     </ng-container>
 </app-top-menu>
-<div id="emptyList" *ngIf="forms?.length === 0">
+@if (forms) {
+@if (forms.length === 0) {
+<div id="emptyList">
     <span class="uxf-icon uxf-list" style="font-size: 3em;"></span>
     <div>Add items to the list.</div>
 </div>
-<ng-container *ngIf="forms?.length > 0">
-    <mat-card *ngFor="let form of forms" [style.margin.px]="5">
+} @else {
+<ng-container>
+    @for (form of forms; track form) {
+    <mat-card [style.margin.px]="5">
         <mat-card-header>
-            <mat-card-title>{{ form.name }}</mat-card-title>
-            <mat-card-subtitle>{{ form.path }}</mat-card-subtitle>
+            <mat-card-title>
+                @if (form.auth) {
+                <div>
+                    @if (form.auth) {
+                    <mat-icon [transform]="true" [style.color]="'goldenrod'"
+                        matTooltip="This form is protected">lock</mat-icon>
+                    }
+                    @if (form.roles?.length > 0) {
+                    <mat-icon [transform]="true" [style.color]="'#0e7bba'"
+                        matTooltip="This form is restricted to specific roles">security</mat-icon>
+                    }
+                </div>
+                }
+                {{ form.name }}
+            </mat-card-title>
+            <mat-card-subtitle>
+                <div>{{ form.path }}<br />{{ form.formWorkflow.name}}</div>
+            </mat-card-subtitle>
         </mat-card-header>
+        <!-- @if (form.description) { -->
         <mat-card-content>
             <p>{{ form.description }}</p>
         </mat-card-content>
+        <!-- } -->
         <mat-card-actions>
-            <div *ngIf="!saving">
-                <button mat-icon-button color="primary" (click)="onEntryEdit(form)">
+            @if (!saving) {
+            <div>
+                <button mat-icon-button (click)="onEntryEdit(form)">
                     <mat-icon>edit</mat-icon>
                 </button>
-                <button mat-icon-button color="warn" (click)="onEntryDelete(form)">
+                <button mat-icon-button class="warn-btn" (click)="onEntryDelete(form)">
                     <mat-icon>delete</mat-icon>
                 </button>
             </div>
+            }
         </mat-card-actions>
     </mat-card>
+    }
 </ng-container>
+}
+}

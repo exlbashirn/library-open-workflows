@@ -14,6 +14,7 @@ export class FormComponent implements OnInit {
   url: SafeResourceUrl;
   form: N8nFormItem;
   notFound = false;
+  loading = true;
 
   constructor(
     private route: ActivatedRoute,
@@ -31,10 +32,18 @@ export class FormComponent implements OnInit {
         this.notFound = !this.form;
         if (this.form) {
           this.appService.setTitle(this.form.name);
-          this.url = this.sanitizer.bypassSecurityTrustResourceUrl(`${url}/form/${this.form.path}`);
+          if (this.form.auth) {
+            this.url = this.sanitizer.bypassSecurityTrustResourceUrl(`/infra/watp/form/${this.form.path}`);
+          } else {
+            this.url = this.sanitizer.bypassSecurityTrustResourceUrl(`${url}/form/${this.form.path}`);
+          }
         }
       })
     });
+  }
+
+  onIframeLoad() {
+    this.loading = false;
   }
 
 }

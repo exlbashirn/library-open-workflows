@@ -105,7 +105,7 @@ export class AppService {
             concatMap(userId => this.restService.call(`/users/${userId}`)),
             map(({ user_role }) => Array.from(new Set(user_role.filter(r => r.status.value === 'ACTIVE').map(r => r.role_type.value)))),
             tap(roles => roles.sort())
-        ));
+        )) as Promise<string[]>;
         return from(this.userRoles);
     }
 

@@ -1,10 +1,16 @@
 @use "@angular/material" as mat;
 
 @mixin main-component-theme($theme, $typgraphy) {
-  div.highlight {
-    border: mat.get-theme-color($theme, primary) solid 2px;
-    background-color: mat.get-theme-color($theme, primary, 70);
-    padding: 5px;
-    font-weight: bolder;
+  app-main {
+    div.highlight {
+      border: mat.get-theme-color($theme, primary) solid 2px;
+      background-color: mat.get-theme-color($theme, primary, 70);
+      padding: 5px;
+      font-weight: bolder;
+    }
+    mat-card {
+      color: mat.get-theme-color($theme, on-error-container);
+      background-color: mat.get-theme-color($theme, error-container);
+    }
   }
 }

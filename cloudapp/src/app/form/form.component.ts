@@ -26,16 +26,17 @@ export class FormComponent implements OnInit {
     this.route.paramMap.subscribe(params => {
       forkJoin([
         this.appService.getForms(),
-        this.appService.getN8nInstanceUrl()
-      ]).subscribe(([forms, url]) => {
+        this.appService.getN8nInstanceUrl(),
+        this.appService.getAlmaUrl(),
+      ]).subscribe(([forms, n8nUrl, almaUrl]) => {
         this.form = forms.find(f => f.id === +params.get('id'));
         this.notFound = !this.form;
         if (this.form) {
           this.appService.setTitle(this.form.name);
           if (this.form.auth) {
-            this.url = this.sanitizer.bypassSecurityTrustResourceUrl(`/infra/watp/form/${this.form.path}`);
+            this.url = this.sanitizer.bypassSecurityTrustResourceUrl(`${almaUrl}/infra/watp/form/${this.form.path}`);
           } else {
-            this.url = this.sanitizer.bypassSecurityTrustResourceUrl(`${url}/form/${this.form.path}`);
+            this.url = this.sanitizer.bypassSecurityTrustResourceUrl(`${n8nUrl}/form/${this.form.path}`);
           }
         }
       })

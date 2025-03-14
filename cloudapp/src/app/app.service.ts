@@ -31,6 +31,7 @@ export interface N8nFormTriggeredWorkflow {
     name: string;
     formPath: string;
     formTitle: string;
+    authentication: string;
 }
 
 interface ConfigMetadata {
@@ -78,7 +79,9 @@ export class AppService {
 
     getFormTriggersFromInstance() {
         this.formTriggeredWorkflows = this.formTriggeredWorkflows ?? firstValueFrom(
-            this.restService.call('/library-open-workflows/workflows/form-triggered')
+            this.restService.call<N8nFormTriggeredWorkflow[]>('/library-open-workflows/workflows/form-triggered').pipe(
+                map(wflows => wflows.filter(wf => wf.authentication === 'alma'))
+            )
         );
         return from(this.formTriggeredWorkflows);
     }

@@ -27,7 +27,7 @@
         <button mat-list-item [routerLink]="['/form', form.id]">
           <h3 matListItemTitle>{{i+1}}. {{form.name}}</h3>
           <p matListItemLine>
-            <span>{{form.description}}</span>
+            <span>{{form.description || form.formWorkflow.name}}</span>
           </p>
         </button>
         }

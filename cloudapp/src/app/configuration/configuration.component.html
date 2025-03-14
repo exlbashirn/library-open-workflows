@@ -25,7 +25,7 @@
                 <div>
                     @if (form.auth) {
                     <mat-icon [transform]="true" [style.color]="'goldenrod'"
-                        matTooltip="This form is protected">lock</mat-icon>
+                        matTooltip="This form will be accessed with Alma authentication">lock</mat-icon>
                     }
                     @if (form.roles?.length > 0) {
                     <mat-icon [transform]="true" [style.color]="'#0e7bba'"
@@ -39,11 +39,9 @@
                 <div>{{ form.path }}<br />{{ form.formWorkflow.name}}</div>
             </mat-card-subtitle>
         </mat-card-header>
-        <!-- @if (form.description) { -->
         <mat-card-content>
             <p>{{ form.description }}</p>
         </mat-card-content>
-        <!-- } -->
         <mat-card-actions>
             @if (!saving) {
             <div>

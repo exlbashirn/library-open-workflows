@@ -23,18 +23,15 @@
             <mat-label>Description</mat-label>
             <textarea matInput formControlName="description"></textarea>
         </mat-form-field>
-        @if (formGroup.get('auth').value) {
-            <mat-form-field>
-                <mat-label>Roles</mat-label>
-                <mat-select formControlName="roles" multiple>
-                    @for (role of roleList; track role) {
-                    <mat-option [value]="role.code">{{ role.value }}</mat-option>
-                    }
-                </mat-select>
-                <mat-hint [align]="'end'">{{ selectedRolesNum }} roles selected</mat-hint>
-            </mat-form-field>
-        }
-        <mat-slide-toggle formControlName="auth">Protected</mat-slide-toggle>
+        <mat-form-field>
+            <mat-label>Roles</mat-label>
+            <mat-select formControlName="roles" multiple>
+                @for (role of roleList; track role) {
+                <mat-option [value]="role.code">{{ role.value }}</mat-option>
+                }
+            </mat-select>
+            <mat-hint [align]="'end'">{{ selectedRolesNum }} roles selected</mat-hint>
+        </mat-form-field>
     </form>
 </mat-dialog-content>
 <mat-dialog-actions [align]="'end'">

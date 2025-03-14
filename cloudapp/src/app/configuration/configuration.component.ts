@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
+import { AlertService } from '@exlibris/exl-cloudapp-angular-lib';
 import { concatMap, filter, finalize, map } from 'rxjs/operators';
 import { AppService, N8nFormItem } from '../app.service';
 import { DeleteConfirmationDialogComponent } from './delete-confirmation-dialog/delete-confirmation-dialog.component';
@@ -16,7 +17,9 @@ export class ConfigurationComponent implements OnInit {
   forms: N8nFormItem[] = [];
   saving = false;
 
-  constructor(private appService: AppService, public dialog: MatDialog) {
+  constructor(private appService: AppService,
+    private alertService: AlertService,
+    public dialog: MatDialog) {
     this.appService.setTitle('Configuration');
   }
 
@@ -67,7 +70,9 @@ export class ConfigurationComponent implements OnInit {
 
   saveChanges() {
     this.saving = true;
-    this.appService.saveForms(this.forms).pipe(finalize(() => this.saving = false)).subscribe();
+    this.appService.saveForms(this.forms).pipe(finalize(() => this.saving = false)).subscribe(() => {
+      this.alertService.success("Configuration saved successfully")
+    });
   }
 
 }

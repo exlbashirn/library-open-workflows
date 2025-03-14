@@ -9,26 +9,6 @@
 
 @mixin global-styles {
     /* Add global styles here */
-    :root body[class*="cloudapp-theme"] {
-        @include mat.list-overrides(
-            (
-                list-item-two-line-container-height: auto,
-                list-item-container-shape: 4px,
-                active-indicator-shape: 4px
-            )
-        );
-        @include mat.icon-button-overrides(
-            (
-                state-layer-size: 32px,
-            )
-        );
-        // @include mat.card-overrides(
-        //     (
-        //         title-text-size: 1.2rem,
-        //     )
-        // );
-    }
-
     html {
         height: 100%;
         body {

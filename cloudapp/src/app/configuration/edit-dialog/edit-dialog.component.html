@@ -23,6 +23,7 @@
             <mat-label>Description</mat-label>
             <textarea matInput formControlName="description"></textarea>
         </mat-form-field>
+        @if (formGroup.get('auth').value) {
         <mat-form-field>
             <mat-label>Roles</mat-label>
             <mat-select formControlName="roles" multiple>
@@ -32,6 +33,7 @@
             </mat-select>
             <mat-hint [align]="'end'">{{ selectedRolesNum }} roles selected</mat-hint>
         </mat-form-field>
+        }
     </form>
 </mat-dialog-content>
 <mat-dialog-actions [align]="'end'">

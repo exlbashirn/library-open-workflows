@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { AlertService, CloudAppConfigService, CloudAppEventsService, CloudAppRestService } from '@exlibris/exl-cloudapp-angular-lib';
 import { cloneDeep } from 'lodash';
 import { BehaviorSubject, firstValueFrom, from, Observable, of } from 'rxjs';
-import { concatMap, map, take, tap } from 'rxjs/operators';
+import { catchError, concatMap, map, take, tap } from 'rxjs/operators';
 
 interface CodeValue {
     code: string;
@@ -80,7 +80,11 @@ export class AppService {
     getFormTriggersFromInstance() {
         this.formTriggeredWorkflows = this.formTriggeredWorkflows ?? firstValueFrom(
             this.restService.call<N8nFormTriggeredWorkflow[]>('/library-open-workflows/workflows/form-triggered').pipe(
-                map(wflows => wflows.filter(wf => wf.authentication === 'alma'))
+                map(wflows => wflows.filter(wf => wf.authentication === 'alma')),
+                catchError(e => {
+                    this.alertService.error("An error was encountered while fetching workflow list");
+                    throw e;
+                })
             )
         );
         return from(this.formTriggeredWorkflows);

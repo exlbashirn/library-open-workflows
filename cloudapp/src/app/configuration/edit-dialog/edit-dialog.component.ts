@@ -42,6 +42,7 @@ export class EditDialogComponent implements OnInit {
         }, Validators.required),
         name: new FormControl(form.name, Validators.required),
         path: new FormControl({ value: form.path, disabled: form.path !== 'null' }, Validators.required),
+        auth: new FormControl(form.auth || form.roles?.length > 0),
         roles: new FormControl(form.roles ?? []),
         description: new FormControl(form.description ?? '')
       });
@@ -50,6 +51,7 @@ export class EditDialogComponent implements OnInit {
         form: new FormControl('', Validators.required),
         name: new FormControl('', Validators.required),
         path: new FormControl({ value: '', disabled: true }, Validators.required),
+        auth: new FormControl(true),
         roles: new FormControl(form.roles ?? []),
         description: new FormControl('')
       });
@@ -82,8 +84,8 @@ export class EditDialogComponent implements OnInit {
         form.name = this.formGroup.get('name').value;
         form.path = this.formGroup.get('path').value;
         form.description = this.formGroup.get('description').value;
+        form.auth = this.formGroup.get('auth').value;
         form.roles = this.formGroup.get('roles').value ?? [];
-        form.auth = true;
         form.modifiedBy = userId;
         form.modifiedDate = Date.now();
         if (!form.id) {

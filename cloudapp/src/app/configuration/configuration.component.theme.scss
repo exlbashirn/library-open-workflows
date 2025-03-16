@@ -1,0 +1,12 @@
+@use "@angular/material" as mat;
+
+@mixin configuration-component-theme($theme, $typgraphy) {
+    app-configuration {
+        button.mat-mdc-icon-button {
+            color: mat.get-theme-color($theme, primary);
+            &.warn-btn {
+                color: mat.get-theme-color($theme, error);
+            }
+        }
+    }
+}

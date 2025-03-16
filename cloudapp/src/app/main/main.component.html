@@ -1,25 +1,41 @@
-<mat-form-field class="search-field" *ngIf="forms?.length > 10">
-  <mat-label>Search</mat-label>
-  <input matInput type="text" [ngModel]="searchValue" (ngModelChange)="onSearchChange($event)">
-  <mat-spinner *ngIf="searching" matSuffix diameter="16"></mat-spinner>
-  <button mat-button *ngIf="!searching && searchValue" matSuffix mat-icon-button aria-label="Clear"
-    (click)="clearSearch()">
-    <mat-icon>close</mat-icon>
-  </button>
-</mat-form-field>
-<mat-action-list *ngIf="forms?.length > 0">
-  <button mat-list-item *ngFor="let form of forms; index as i" [routerLink]="['/form', form.id]"
-    routerLinkActive="router-link-active">
-    <h3 matLine>{{i+1}}. {{form.name}} </h3>
-    <p matLine>
-      <span> {{form.description}} </span>
-    </p>
-  </button>
-</mat-action-list>
-<div id="emptyList" *ngIf="forms?.length === 0">
-  <span class="uxf-icon uxf-list" style="font-size: 3em;"></span>
-  <div>No items available</div>
-</div>
-<div class="loading-shade" *ngIf="loading">
-  <mat-spinner diameter="50"></mat-spinner>
-</div>
+
+<mat-card appearance="outlined">
+  <mat-card-content><strong>Note:</strong> This version requires the <strong>March 2025</strong> release</mat-card-content>
+</mat-card>
+
+@if (loading) {
+  <div class="loading-shade">
+    <mat-spinner diameter="50"></mat-spinner>
+  </div>
+} @else if (forms) {
+  @if (forms.length > 10) {
+    <mat-form-field class="search-field">
+      <mat-label>Search</mat-label>
+      <input matInput type="text" [ngModel]="searchValue" (ngModelChange)="onSearchChange($event)">
+      @if (searching) {
+      <mat-spinner *ngIf="searching" matSuffix diameter="16"></mat-spinner>
+      } @else if (searchValue) {
+      <button matSuffix mat-icon-button aria-label="Clear" (click)="clearSearch()">
+        <mat-icon>close</mat-icon>
+      </button>
+      }
+    </mat-form-field>
+    }
+    @if (forms.length > 0) {
+      <mat-action-list>
+        @for (form of forms; track form; let i = $index) {
+        <button mat-list-item [routerLink]="['/form', form.id]">
+          <h3 matListItemTitle>{{i+1}}. {{form.name}}</h3>
+          <p matListItemLine>
+            <span>{{form.description || form.formWorkflow.name}}</span>
+          </p>
+        </button>
+        }
+      </mat-action-list>
+      } @else {
+          <div id="emptyList">
+            <span class="uxf-icon uxf-list" style="font-size: 3em;"></span>
+            <div>No items available</div>
+          </div>
+      }
+}

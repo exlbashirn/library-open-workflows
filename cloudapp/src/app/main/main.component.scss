@@ -1,16 +1,12 @@
-mat-action-list .mat-list-item {
+mat-action-list .mat-mdc-list-item {
   margin: 2px 0;
-  ::ng-deep .mat-list-item-content {
-    padding: 10px 16px !important;
-    h3 {
+  ::ng-deep h3.mat-mdc-list-item-title {
       font-size: 1.1em;
       text-transform: uppercase;
     }
-  }
 }
 
 .search-field {
   width: 100%;
   max-width: 500px;
 }
-

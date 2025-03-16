@@ -1,11 +1,12 @@
-<div *ngIf="router.url != '/'" class="title">
-    <h1>{{ title$ | async }}</h1>
-    <div class="eca-actions">
-        <button mat-flat-button color="secondary" [routerLink]="['/']" [disabled]="disabled">
-            <mat-icon>arrow_back</mat-icon>
-            Home
-        </button>
-        <ng-content select="[buttons]"></ng-content>
+@if (router.url !== '/') {
+    <div class="title">
+        <h1>{{ title$ | async }}</h1>
+        <div class="eca-actions">
+            <button mat-flat-button color="secondary" [routerLink]="['/']" [disabled]="disabled">
+                <mat-icon>arrow_back</mat-icon>
+                Home
+            </button>
+            <ng-content select="[buttons]"></ng-content>
+        </div>
     </div>
-    <!-- <h1>{{ title$ | async }}</h1> -->
-</div>
+}

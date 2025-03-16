@@ -1,9 +1,10 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { isEmpty } from 'lodash';
+import { isEmpty, isEqual, pick } from 'lodash';
+import { forkJoin } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
-import { AppService, N8nFormItem, N8nFormTriggeredWorkflow } from '../../app.service';
+import { AppService, N8nFormItem, N8nFormTriggeredWorkflow, RoleType } from '../../app.service';
 
 @Component({
   selector: 'app-edit-dialog',
@@ -14,6 +15,8 @@ export class EditDialogComponent implements OnInit {
 
   formGroup: FormGroup;
   formTriggeredWorkflows: N8nFormTriggeredWorkflow[] = [];
+  roleList: RoleType[];
+  selectedRolesNum = 0;
   editMode = false;
 
   constructor(@Inject(MAT_DIALOG_DATA) public data: { form: N8nFormItem },
@@ -23,10 +26,15 @@ export class EditDialogComponent implements OnInit {
   ngOnInit(): void {
     const { form } = this.data;
     this.editMode = !isEmpty(this.data?.form);
-    this.appService.getFormTriggersFromInstance().subscribe(formTriggeredWorkflows => {
+    forkJoin([
+      this.appService.getFormTriggersFromInstance(),
+      this.appService.getRolesTypes()
+    ]).subscribe(([formTriggeredWorkflows, roleTypes]) => {
       this.formTriggeredWorkflows = formTriggeredWorkflows;
+      this.roleList = roleTypes;
     });
     if (this.editMode) {
+      this.selectedRolesNum = form.roles?.length ?? 0;
       this.formGroup = new FormGroup({
         form: new FormControl({
           value: `${form.formWorkflow.id}+${form.formWorkflow.formPath}`,
@@ -34,6 +42,8 @@ export class EditDialogComponent implements OnInit {
         }, Validators.required),
         name: new FormControl(form.name, Validators.required),
         path: new FormControl({ value: form.path, disabled: form.path !== 'null' }, Validators.required),
+        auth: new FormControl(form.auth || form.roles?.length > 0),
+        roles: new FormControl(form.roles ?? []),
         description: new FormControl(form.description ?? '')
       });
     } else {
@@ -41,22 +51,27 @@ export class EditDialogComponent implements OnInit {
         form: new FormControl('', Validators.required),
         name: new FormControl('', Validators.required),
         path: new FormControl({ value: '', disabled: true }, Validators.required),
+        auth: new FormControl(true),
+        roles: new FormControl(form.roles ?? []),
         description: new FormControl('')
       });
     }
     this.formGroup.get('form')?.valueChanges.subscribe(formVal => {
       const form = this.formTriggeredWorkflows.find(wf => `${wf.id}+${wf.formPath}` === formVal);
-      this.formGroup.get('name').setValue(`${form.formTitle} (${form.name})`);
+      this.formGroup.get('name').setValue(`${form.formTitle}`);
       this.formGroup.get('path').setValue(form.formPath);
       if (form.formPath === 'null') {
         this.formGroup.get('path').enable();
       } else {
         this.formGroup.get('path').disable();
       }
-    })
+    });
     this.formGroup.valueChanges.pipe(debounceTime(100)).subscribe(value => {
-      const { name, path, description } = form;
-      if (this.formGroup.dirty && JSON.stringify(value) === JSON.stringify({ name, path, description })) {
+      this.selectedRolesNum = value.roles?.length ?? 0;
+      const props: (keyof N8nFormItem)[] = ['name', 'description', 'roles'];
+      const now = pick(value, props);
+      const original = Object.assign({ roles: [] }, pick(form, props));
+      if (this.formGroup.dirty && isEqual(now, original)) {
         this.formGroup.markAsPristine();
       }
     })
@@ -69,6 +84,8 @@ export class EditDialogComponent implements OnInit {
         form.name = this.formGroup.get('name').value;
         form.path = this.formGroup.get('path').value;
         form.description = this.formGroup.get('description').value;
+        form.auth = this.formGroup.get('auth').value;
+        form.roles = this.formGroup.get('roles').value ?? [];
         form.modifiedBy = userId;
         form.modifiedDate = Date.now();
         if (!form.id) {

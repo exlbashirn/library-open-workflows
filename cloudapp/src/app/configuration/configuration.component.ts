@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
+import { AlertService } from '@exlibris/exl-cloudapp-angular-lib';
 import { concatMap, filter, finalize, map } from 'rxjs/operators';
 import { AppService, N8nFormItem } from '../app.service';
 import { DeleteConfirmationDialogComponent } from './delete-confirmation-dialog/delete-confirmation-dialog.component';
@@ -16,18 +17,15 @@ export class ConfigurationComponent implements OnInit {
   forms: N8nFormItem[] = [];
   saving = false;
 
-  private changed = false;
-
-  constructor(private appService: AppService, public dialog: MatDialog) {
+  constructor(private appService: AppService,
+    private alertService: AlertService,
+    public dialog: MatDialog) {
     this.appService.setTitle('Configuration');
   }
 
   ngOnInit(): void {
     this.appService.getForms().subscribe(forms => {
       this.forms = forms ?? [];
-    });
-    this.appService.getFormTriggersFromInstance().subscribe(workflows => {
-
     });
   }
 
@@ -44,7 +42,7 @@ export class ConfigurationComponent implements OnInit {
   }
 
   onEntryEdit(form: N8nFormItem) {
-    this.dialog.open(EditDialogComponent, { minWidth: '50%', maxWidth: '500px', data: { form } })
+    this.dialog.open(EditDialogComponent, { minWidth: '90vw', maxHeight: '95vh', data: { form } })
       .afterClosed().pipe(
         filter(res => !!res),
         concatMap(res => this.appService.confirmNoRemoteChanges().pipe(map(() => res))),
@@ -55,7 +53,7 @@ export class ConfigurationComponent implements OnInit {
   }
 
   onEntryAdd() {
-    this.dialog.open(EditDialogComponent, { minWidth: '50%', maxWidth: '500px', data: { form: {} } })
+    this.dialog.open(EditDialogComponent, { minWidth: '90vw', maxHeight: '95vh', data: { form: {} } })
       .afterClosed().pipe(
         filter(res => !!res),
         concatMap(res => this.appService.confirmNoRemoteChanges().pipe(map(() => res)))
@@ -72,7 +70,9 @@ export class ConfigurationComponent implements OnInit {
 
   saveChanges() {
     this.saving = true;
-    this.appService.saveForms(this.forms).pipe(finalize(() => this.saving = false)).subscribe();
+    this.appService.saveForms(this.forms).pipe(finalize(() => this.saving = false)).subscribe(() => {
+      this.alertService.success("Configuration saved successfully")
+    });
   }
 
 }

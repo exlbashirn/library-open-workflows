@@ -1,22 +1,23 @@
 @import "./app/main/main.component.theme";
+@import "./app/configuration/configuration.component.theme";
 
 @mixin themed-styles($theme, $typography) {
     /* Include themed component mixins or theme dependent styles here */
     @include main-component-theme($theme, $typography);
+    @include configuration-component-theme($theme, $typography);
 }
 
 @mixin global-styles {
     /* Add global styles here */
-}
-
-html {
-    height: 100%;
-    body {
-        height: calc(100% - 20px);
-        #emptyList {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+    html {
+        height: 100%;
+        body {
+            height: calc(100% - 20px);
+            #emptyList {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
         }
     }
 }

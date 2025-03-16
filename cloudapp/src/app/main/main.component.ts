@@ -1,5 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { debounce } from 'lodash';
+import { forkJoin } from 'rxjs';
 import { AppService, N8nFormItem } from '../app.service';
 
 @Component({
@@ -21,9 +22,13 @@ export class MainComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit() {
-    this.appService.getForms().subscribe(forms => {
-      this._forms = forms ?? [];
+    forkJoin([
+      this.appService.getForms(),
+      this.appService.getCurrentUserRoles()
+    ]).subscribe(([forms, userRoles]) => {
+      this._forms = forms?.filter(f => f.roles?.length === 0 || f.roles?.some(r => userRoles.indexOf(r) > -1)) ?? [];
       this.forms = [...this._forms];
+      this.loading = false;
     })
   }
 
@@ -55,14 +60,6 @@ export class MainComponent implements OnInit, OnDestroy {
   clearSearch() {
     this.forms = [...this._forms];
     this.searchValue = '';
-  }
-
-  refresh() {
-    this.loadForms();
-  }
-
-  loadForms() {
-    this.loading = true;
   }
 
 }

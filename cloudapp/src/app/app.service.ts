@@ -1,9 +1,16 @@
 
 import { Injectable } from '@angular/core';
-import { AlertService, CloudAppConfigService, CloudAppEventsService, CloudAppRestService, InitService } from '@exlibris/exl-cloudapp-angular-lib';
+import { AlertService, CloudAppConfigService, CloudAppEventsService, CloudAppRestService } from '@exlibris/exl-cloudapp-angular-lib';
 import { cloneDeep } from 'lodash';
-import { BehaviorSubject, from, Observable, of } from 'rxjs';
-import { concatMap, map, take, tap } from 'rxjs/operators';
+import { BehaviorSubject, firstValueFrom, from, Observable, of } from 'rxjs';
+import { catchError, concatMap, map, take, tap } from 'rxjs/operators';
+
+interface CodeValue {
+    code: string;
+    value: string;
+}
+
+export type RoleType = CodeValue;
 
 export interface N8nFormItem {
     id: number,
@@ -14,7 +21,9 @@ export interface N8nFormItem {
     createdBy: string,
     modifiedDate: number,
     modifiedBy: string,
-    formWorkflow: N8nFormTriggeredWorkflow
+    formWorkflow: N8nFormTriggeredWorkflow,
+    auth: boolean,
+    roles: string[]
 }
 
 export interface N8nFormTriggeredWorkflow {
@@ -22,6 +31,7 @@ export interface N8nFormTriggeredWorkflow {
     name: string;
     formPath: string;
     formTitle: string;
+    authentication: string;
 }
 
 interface ConfigMetadata {
@@ -42,19 +52,21 @@ export class AppService {
     private almaUrl: Promise<string>;
     private n8nUrl: Promise<string>;
     private formTriggeredWorkflows: Promise<N8nFormTriggeredWorkflow[]>;
+    private roleTypes: Promise<RoleType[]>;
+    private userRoles: Promise<string[]>;
 
-    constructor(private initService: InitService,
-        private configService: CloudAppConfigService,
+    constructor(private configService: CloudAppConfigService,
         private eventsService: CloudAppEventsService,
         private alertService: AlertService,
         private restService: CloudAppRestService) {
-        this.almaUrl = this.eventsService.getInitData().pipe(take(1),
-            map(data => data.urls.alma)).toPromise();
-        this.n8nUrl = this.restService.call('/almaws/v1/conf/mapping-tables/WorkflowAutomationToolConfig')
-            .pipe(map((data: any) => data.row.find(r => r.column0 === '02_wat_url').column2))
-            .toPromise();
-        this.formTriggeredWorkflows = this.restService.call<N8nFormTriggeredWorkflow[]>
-            ('/library-open-workflows/workflows/form-triggered').toPromise();
+        this.init();
+    }
+
+    private init() {
+        this.almaUrl = firstValueFrom(this.eventsService.getInitData().pipe(take(1),
+            map(data => data.urls.alma)));
+        this.n8nUrl = firstValueFrom(this.restService.call('/conf/mapping-tables/WorkflowAutomationToolConfig')
+            .pipe(map((data: any) => data.row.find(r => r.column0 === '02_wat_url').column2)));
     }
 
     getAlmaUrl() {
@@ -66,12 +78,42 @@ export class AppService {
     }
 
     getFormTriggersFromInstance() {
+        this.formTriggeredWorkflows = this.formTriggeredWorkflows ?? firstValueFrom(
+            this.restService.call<N8nFormTriggeredWorkflow[]>('/library-open-workflows/workflows/form-triggered').pipe(
+                map(wflows => wflows.filter(wf => wf.authentication === 'alma')),
+                catchError(e => {
+                    this.alertService.error("An error was encountered while fetching workflow list");
+                    throw e;
+                })
+            )
+        );
         return from(this.formTriggeredWorkflows);
+    }
+
+    getRolesTypes() {
+        this.roleTypes = this.roleTypes ?? firstValueFrom(this.restService.call('/user-roles/types'));
+        return from(this.roleTypes);
     }
 
     getCurrentUserId() {
         return this.eventsService.getInitData().pipe(take(1),
             map(data => data.user.primaryId));
+    }
+
+    isCurrentUserAdmin() {
+        return this.eventsService.getInitData().pipe(take(1),
+            map(data => data.user.isAdmin));
+    }
+
+    getCurrentUserRoles() {
+        this.userRoles = this.userRoles ?? firstValueFrom(this.eventsService.getInitData().pipe(
+            take(1),
+            map(data => data.user.primaryId),
+            concatMap(userId => this.restService.call(`/users/${userId}`)),
+            map(({ user_role }) => Array.from(new Set(user_role.filter(r => r.status.value === 'ACTIVE').map(r => r.role_type.value)))),
+            tap(roles => roles.sort())
+        )) as Promise<string[]>;
+        return from(this.userRoles);
     }
 
     setTitle(title: string) {

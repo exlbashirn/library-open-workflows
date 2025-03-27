@@ -34,6 +34,39 @@
             <mat-hint [align]="'end'">{{ selectedRolesNum }} roles selected</mat-hint>
         </mat-form-field>
         }
+        <mat-accordion [style.margin]="'10px 0'" [style.display]="'block'">
+            <mat-expansion-panel>
+                <mat-expansion-panel-header>
+                    <mat-panel-title>
+                        Default parameters
+                        @if (defaultParams?.length > 0) {
+                            ({{ defaultParams.length }})
+                        }
+                    </mat-panel-title>
+                </mat-expansion-panel-header>
+                <div formArrayName="defaultParams">
+                    @for (pair of defaultParams.controls; track $index; let i = $index) {
+                    <div [formGroupName]="i" [style.display]="'flex'">
+                        <button mat-icon-button color="warn" (click)="removeParam(i)"
+                            [style.marginInlineStart]="'-10px'" [style.marginInlineEnd]="'10px'">
+                            <mat-icon>delete</mat-icon>
+                        </button>
+                        <div [style.flex]="1">
+                            <mat-form-field>
+                                <mat-label>Name</mat-label>
+                                <input matInput placeholder="Name" formControlName="key">
+                            </mat-form-field>
+                            <mat-form-field>
+                                <mat-label>Value</mat-label>
+                                <input matInput placeholder="Value" formControlName="value">
+                            </mat-form-field>
+                        </div>
+                    </div>
+                    }
+                </div>
+                <button mat-raised-button color="primary" type="button" (click)="addParam()" [style.width]="'100%'">Add</button>
+            </mat-expansion-panel>
+        </mat-accordion>
     </form>
 </mat-dialog-content>
 <mat-dialog-actions [align]="'end'">

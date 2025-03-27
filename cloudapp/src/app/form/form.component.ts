@@ -36,16 +36,23 @@ export class FormComponent implements OnInit {
           n8nUrl = n8nUrl.slice(0, -1);
         }
         return [forms, n8nUrl, almaUrl];
-      })).subscribe(([forms, n8nUrl, almaUrl]) => {
+      })).subscribe(([forms, n8nUrl, almaUrl]: [N8nFormItem[], string, string]) => {
         this.form = forms.find(f => f.id === +params.get('id'));
         this.notFound = !this.form;
         if (this.form) {
           this.appService.setTitle(this.form.name);
+          const path = `/form/${this.form.path}`;
+          let url: URL;
           if (this.form.auth) {
-            this.url = this.sanitizer.bypassSecurityTrustResourceUrl(`${almaUrl}/infra/watp/form/${this.form.path}`);
+            url = new URL(`/infra/watp${path}`, almaUrl);
           } else {
-            this.url = this.sanitizer.bypassSecurityTrustResourceUrl(`${n8nUrl}/form/${this.form.path}`);
+            const _n8nUrl = new URL(n8nUrl);
+            url = new URL(_n8nUrl.pathname !== '/' ? _n8nUrl.pathname + path : path, _n8nUrl.origin);
           }
+          for (const p of (this.form.defaultParams ?? [])) {
+            url.searchParams.append(p.key, p.value);
+          }
+          this.url = this.sanitizer.bypassSecurityTrustResourceUrl(url.toString());
         }
       })
     });

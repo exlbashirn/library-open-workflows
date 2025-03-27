@@ -23,7 +23,8 @@ export interface N8nFormItem {
     modifiedBy: string,
     formWorkflow: N8nFormTriggeredWorkflow,
     auth: boolean,
-    roles: string[]
+    roles: string[],
+    defaultParams?: any
 }
 
 export interface N8nFormTriggeredWorkflow {

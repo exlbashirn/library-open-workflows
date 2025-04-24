@@ -2,7 +2,7 @@
 import { Injectable } from '@angular/core';
 import { AlertService, CloudAppConfigService, CloudAppEventsService, CloudAppRestService } from '@exlibris/exl-cloudapp-angular-lib';
 import { cloneDeep } from 'lodash';
-import { BehaviorSubject, firstValueFrom, from, Observable, of } from 'rxjs';
+import { BehaviorSubject, firstValueFrom, forkJoin, from, Observable, of } from 'rxjs';
 import { catchError, concatMap, map, take, tap } from 'rxjs/operators';
 
 interface CodeValue {
@@ -150,6 +150,15 @@ export class AppService {
         return of(cloneDeep(this.forms));
     }
 
+    getUserAccessibleForms() {
+        return forkJoin([
+            this.getForms(),
+            this.getCurrentUserRoles()
+          ]).pipe(map(([forms, userRoles]) => {
+            return forms?.filter(f => !f.roles || f.roles.length === 0 || f.roles.some(r => userRoles.indexOf(r) > -1)) ?? [];
+          }));
+    }
+
     loadForms() {
         return this.configService.get().pipe(
             tap(conf => {
@@ -158,6 +167,10 @@ export class AppService {
             }),
             map(conf => cloneDeep(conf['forms']))
         );
+    }
+
+    getFormKey(form: N8nFormItem) {
+        return form.formWorkflow.id + '_' + form.formWorkflow.formPath + '_' + form.id;
     }
 
 }

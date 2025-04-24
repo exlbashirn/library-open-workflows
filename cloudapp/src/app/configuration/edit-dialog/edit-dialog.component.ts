@@ -19,7 +19,7 @@ export class EditDialogComponent implements OnInit {
   selectedRolesNum = 0;
   editMode = false;
 
-  constructor(@Inject(MAT_DIALOG_DATA) public data: { form: N8nFormItem },
+  constructor(@Inject(MAT_DIALOG_DATA) private data: { form: N8nFormItem },
     private dialogRef: MatDialogRef<EditDialogComponent>,
     private appService: AppService) { }
 
@@ -57,6 +57,7 @@ export class EditDialogComponent implements OnInit {
 
   removeParam(index: number) {
     this.defaultParams.removeAt(index);
+    this.defaultParams.markAsDirty();
   }
 
   onSave() {
@@ -88,7 +89,7 @@ export class EditDialogComponent implements OnInit {
       this.selectedRolesNum = value.roles?.length ?? 0;
       const props: (keyof N8nFormItem)[] = ['name', 'description', 'roles', 'defaultParams'];
       const now = pick(value, props);
-      const original = Object.assign({ roles: [] }, pick(form, props));
+      const original = Object.assign({ roles: [], defaultParams: [] }, pick(form, props));
       if (this.formGroup.dirty && isEqual(now, original)) {
         this.formGroup.markAsPristine();
       }

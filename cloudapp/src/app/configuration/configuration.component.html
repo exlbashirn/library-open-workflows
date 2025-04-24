@@ -20,17 +20,23 @@
         <mat-card [style.margin.px]="5">
             <mat-card-header>
                 <mat-card-title>
-                    @if (form.auth) {
-                    <div>
-                        @if (form.auth) {
-                        <mat-icon [transform]="true" [style.color]="'goldenrod'"
-                            matTooltip="This form will be accessed with Alma authentication">lock</mat-icon>
-                        }
-                        @if (form.roles?.length > 0) {
-                        <mat-icon [transform]="true" [style.color]="'#0e7bba'"
-                            matTooltip="This form is restricted to specific roles">security</mat-icon>
-                        }
-                    </div>
+                    @if (form.auth || form.defaultParams?.length > 0) {
+                        <div>
+                            @if (form.auth) {
+                                @if (form.auth) {
+                                    <mat-icon [transform]="true" [style.color]="'goldenrod'"
+                                        matTooltip="This form will be accessed with Alma authentication">lock</mat-icon>
+                                }
+                                @if (form.roles?.length > 0) {
+                                    <mat-icon [transform]="true" [style.color]="'#0e7bba'"
+                                        matTooltip="This form is restricted to specific roles">security</mat-icon>
+                                }
+                            }
+                            @if (form.defaultParams?.length > 0) {
+                                <mat-icon [transform]="true" [style.color]="'darkgrey'"
+                                    matTooltip="This form has default parameters set">list_alt</mat-icon>
+                            }
+                        </div>
                     }
                     {{ form.name }}
                 </mat-card-title>

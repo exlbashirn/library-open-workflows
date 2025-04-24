@@ -19,6 +19,7 @@ export class ConfigurationComponent implements OnInit {
   constructor(private appService: AppService,
     private alertService: AlertService,
     private dialog: MatDialog) {
+
     this.appService.setTitle('Configuration');
   }
 

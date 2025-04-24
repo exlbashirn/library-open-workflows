@@ -1,41 +1,20 @@
-<h1 mat-dialog-title>Edit Entry</h1>
+<h1 mat-dialog-title>Edit default parameters</h1>
 <mat-dialog-content>
+    @if (configDefaultParams?.length > 0) {
+        <div>The following parameters are set by an admin:</div>
+        <mat-list>
+            @for (item of configDefaultParams; track $index) {
+                <mat-list-item>
+                    <div><strong>{{ item.key }}</strong></div>
+                    <div>{{ item.value }}</div>
+                </mat-list-item>
+            }
+        </mat-list>
+        <div>You may override them, or add your own.</div>
+    }
     <form [formGroup]="formGroup">
-        <mat-form-field>
-            <mat-label>Form</mat-label>
-            <mat-select formControlName="form" required>
-                @for (wflow of formTriggeredWorkflows; track wflow) {
-                <mat-option [value]="wflow.id + '+' + wflow.formPath">
-                    {{wflow.formTitle}} ({{wflow.name}})
-                </mat-option>
-                }
-            </mat-select>
-        </mat-form-field>
-        <mat-form-field>
-            <mat-label>Path</mat-label>
-            <input matInput formControlName="path" required>
-        </mat-form-field>
-        <mat-form-field>
-            <mat-label>Name</mat-label>
-            <input matInput formControlName="name" required>
-        </mat-form-field>
-        <mat-form-field>
-            <mat-label>Description</mat-label>
-            <textarea matInput formControlName="description"></textarea>
-        </mat-form-field>
-        @if (formGroup.get('auth').value) {
-        <mat-form-field>
-            <mat-label>Roles</mat-label>
-            <mat-select formControlName="roles" multiple>
-                @for (role of roleList; track role) {
-                <mat-option [value]="role.code">{{ role.value }}</mat-option>
-                }
-            </mat-select>
-            <mat-hint [align]="'end'">{{ selectedRolesNum }} roles selected</mat-hint>
-        </mat-form-field>
-        }
         <mat-accordion [style.margin]="'10px 0'" [style.display]="'block'">
-            <mat-expansion-panel>
+            <mat-expansion-panel [expanded]="!hasDefaultParams">
                 <mat-expansion-panel-header>
                     <mat-panel-title>
                         Default parameters

@@ -5,7 +5,8 @@
    "author": "exlibris",
    "description": "Allows the library staff to submit a form, which will initiate a predefined workflow based on certain parameters",
    "pages": {
-      "config": "/#/configuration"
+      "config": "/#/configuration",
+      "settings": "/#/settings"
    },
    "icon": {
       "type": "url",

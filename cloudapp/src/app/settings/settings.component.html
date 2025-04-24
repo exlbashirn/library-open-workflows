@@ -1,0 +1,40 @@
+<div class="loading-shade" *ngIf="saving">
+    <mat-progress-spinner mode="indeterminate" diameter="50"></mat-progress-spinner>
+</div>
+<app-top-menu></app-top-menu>
+@if (forms) {
+    @if (forms.length === 0) {
+    <div id="emptyList">
+        <span class="uxf-icon uxf-list" style="font-size: 3em;"></span>
+        <div>You have no items to edit.</div>
+    </div>
+    } @else {
+    <ng-container>
+        @for (form of forms; track form) {
+        <mat-card [style.margin.px]="5">
+            <mat-card-header>
+                <mat-card-title>
+                    @if (settings.defaultParams?.[appService.getFormKey(form)]?.length > 0) {
+                        <mat-icon [transform]="true" [style.color]="'darkgrey'"
+                            matTooltip="This form has personal default parameters set">list_alt</mat-icon>
+                    }
+                    {{ form.name }}
+                </mat-card-title>
+                <mat-card-subtitle>
+                    <div>{{ form.formWorkflow.name}}</div>
+                </mat-card-subtitle>
+            </mat-card-header>
+            <mat-card-actions>
+                @if (!saving) {
+                <div>
+                    <button mat-icon-button (click)="onEntryEdit(form)">
+                        <mat-icon>edit</mat-icon>
+                    </button>
+                </div>
+                }
+            </mat-card-actions>
+        </mat-card>
+        }
+    </ng-container>
+    }
+}

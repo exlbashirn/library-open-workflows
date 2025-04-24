@@ -22,12 +22,9 @@ export class MainComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit() {
-    forkJoin([
-      this.appService.getForms(),
-      this.appService.getCurrentUserRoles()
-    ]).subscribe(([forms, userRoles]) => {
-      this._forms = forms?.filter(f => !f.roles || f.roles.length === 0 || f.roles.some(r => userRoles.indexOf(r) > -1)) ?? [];
-      this.forms = [...this._forms];
+    this.appService.getUserAccessibleForms().subscribe(forms => {
+      this._forms = forms;
+      this.forms = [...forms];
       this.loading = false;
     })
   }

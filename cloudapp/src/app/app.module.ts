@@ -8,10 +8,18 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { ConfigurationComponent } from './configuration/configuration.component';
 import { DeleteConfirmationDialogComponent } from './configuration/delete-confirmation-dialog/delete-confirmation-dialog.component';
-import { EditDialogComponent } from './configuration/edit-dialog/edit-dialog.component';
+import { EditDialogComponent as ConfigurationEditDialogComponent } from './configuration/edit-dialog/edit-dialog.component';
 import { FormComponent } from './form/form.component';
 import { MainComponent } from './main/main.component';
 import { TopMenuComponent } from './top-menu/top-menu.component';
+import { SettingsComponent } from './settings/settings.component';
+import { EditDialogComponent as SettingsEditDialogComponent } from './settings/edit-dialog/edit-dialog.component';
+import { MAT_TOOLTIP_DEFAULT_OPTIONS, MAT_TOOLTIP_DEFAULT_OPTIONS_FACTORY, MatTooltipDefaultOptions } from '@angular/material/tooltip';
+
+export const matTooltipDefaultOptions: MatTooltipDefaultOptions = {
+    ...MAT_TOOLTIP_DEFAULT_OPTIONS_FACTORY(),
+    disableTooltipInteractivity: true,
+  };
 
 @NgModule({
     declarations: [
@@ -21,7 +29,9 @@ import { TopMenuComponent } from './top-menu/top-menu.component';
         TopMenuComponent,
         ConfigurationComponent,
         DeleteConfirmationDialogComponent,
-        EditDialogComponent
+        ConfigurationEditDialogComponent,
+        SettingsComponent,
+        SettingsEditDialogComponent
     ],
     bootstrap: [AppComponent],
     imports: [
@@ -42,6 +52,7 @@ import { TopMenuComponent } from './top-menu/top-menu.component';
             multi: true
         },
         provideHttpClient(withInterceptorsFromDi()),
+        { provide: MAT_TOOLTIP_DEFAULT_OPTIONS, useValue: matTooltipDefaultOptions }
     ]
 })
 export class AppModule { }

@@ -46,12 +46,6 @@ export class SettingsComponent {
         this.settings.defaultParams = this.settings.defaultParams ?? {};
         this.settings.defaultParams[formKey] = params;
       }
-      for (const form of this.forms) {
-        if (this.settings.defaultParams
-          && this.settings.defaultParams[this.appService.getFormKey(form)]) {
-          delete this.settings.defaultParams[formKey];
-        }
-      }
       this.saving = true;
       this.settingsService.set(this.settings).pipe(
         finalize(() => this.saving = false)

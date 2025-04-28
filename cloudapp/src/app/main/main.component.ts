@@ -1,5 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { debounce } from 'lodash';
+import { forkJoin } from 'rxjs';
 import { AppService, N8nFormItem } from '../app.service';
 
 @Component({

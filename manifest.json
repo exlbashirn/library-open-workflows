@@ -19,6 +19,9 @@
    "contentSecurity": {
       "frameSrc": [
          "*.exlibrisgroup.com"
-      ]
+      ],
+      "sandbox": {
+         "downloads": true
+      }
    }
 }

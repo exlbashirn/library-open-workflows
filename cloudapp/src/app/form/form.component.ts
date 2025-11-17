@@ -46,7 +46,7 @@ export class FormComponent implements OnInit {
           this.appService.setTitle(this.form.name);
           const path = `/form/${this.form.path}`;
           let url: URL;
-          if (this.form.auth) {
+          if (this.form.auth || !n8nUrl) {
             url = new URL(`/infra/watp${path}`, almaUrl);
           } else {
             const _n8nUrl = new URL(n8nUrl);

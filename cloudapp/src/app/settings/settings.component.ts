@@ -40,12 +40,7 @@ export class SettingsComponent {
       data: { form, params: this.settings.defaultParams?.[formKey] ?? [] }
     }).afterClosed().pipe(filter(res => !!res)).subscribe(res => {
       const params = typeof res === 'function' && res();
-      if (params.length === 0) {
-        delete this.settings.defaultParams?.[formKey];
-      } else {
-        this.settings.defaultParams = this.settings.defaultParams ?? {};
-        this.settings.defaultParams[formKey] = params;
-      }
+      this.updateSettings(params, formKey);
       this.saving = true;
       this.settingsService.set(this.settings).pipe(
         finalize(() => this.saving = false)
@@ -55,4 +50,26 @@ export class SettingsComponent {
     });
   }
 
+  private updateSettings(params: any, formKey: string) {
+    if (params.length === 0) {
+      delete this.settings.defaultParams?.[formKey];
+    } else {
+      this.settings.defaultParams = this.settings.defaultParams ?? {};
+      this.settings.defaultParams[formKey] = params;
+    }
+    this.removeNonExistingFormKeys();
+  }
+
+  private removeNonExistingFormKeys() {
+    const formKeys = this.forms.reduce((acc, form) => {
+      acc.add(this.appService.getFormKey(form));
+      return acc;
+    }, new Set());
+    for (const formKey of Object.keys(this.settings?.defaultParams ?? {})) {
+      if (!formKeys.has(formKey)) {
+        delete this.settings.defaultParams[formKey];
+      }
+    }
+  }
+  
 }

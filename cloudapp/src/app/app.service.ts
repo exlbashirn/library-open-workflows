@@ -66,8 +66,10 @@ export class AppService {
     private init() {
         this.almaUrl = firstValueFrom(this.eventsService.getInitData().pipe(take(1),
             map(data => data.urls.alma)));
-        this.n8nUrl = firstValueFrom(this.restService.call('/conf/mapping-tables/WorkflowAutomationToolConfig')
-            .pipe(map((data: any) => data.row.find(r => r.column0 === '02_wat_url').column2)));
+        this.n8nUrl = firstValueFrom(this.restService.call('/conf/mapping-tables/WorkflowAutomationToolConfig').pipe(
+            map((data: any) => data.row.find(r => r.column0 === '02_wat_url').column2),
+            catchError(() => of(null))
+        ));
     }
 
     getAlmaUrl() {
@@ -83,7 +85,7 @@ export class AppService {
             this.restService.call<N8nFormTriggeredWorkflow[]>('/library-open-workflows/workflows/form-triggered').pipe(
                 map(wflows => wflows.filter(wf => wf.authentication === 'alma')),
                 catchError(e => {
-                    this.alertService.error("An error was encountered while fetching workflow list");
+                    this.alertService.error('An error was encountered while fetching workflow list');
                     throw e;
                 })
             )
@@ -110,7 +112,7 @@ export class AppService {
         this.userRoles = this.userRoles ?? firstValueFrom(this.eventsService.getInitData().pipe(
             take(1),
             map(data => data.user.primaryId),
-            concatMap(userId => this.restService.call(`/users/${userId}`)),
+            concatMap(() => this.restService.call('/users/ME')),
             map(({ user_role }) => Array.from(new Set(user_role.filter(r => r.status.value === 'ACTIVE').map(r => r.role_type.value)))),
             tap(roles => roles.sort())
         )) as Promise<string[]>;
@@ -154,9 +156,9 @@ export class AppService {
         return forkJoin([
             this.getForms(),
             this.getCurrentUserRoles()
-          ]).pipe(map(([forms, userRoles]) => {
+        ]).pipe(map(([forms, userRoles]) => {
             return forms?.filter(f => !f.roles || f.roles.length === 0 || f.roles.some(r => userRoles.indexOf(r) > -1)) ?? [];
-          }));
+        }));
     }
 
     loadForms() {

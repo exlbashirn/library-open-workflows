@@ -19,7 +19,7 @@
    "contentSecurity": {
       "frameSrc": [
          "*.exlibrisgroup.com",
-         "blob:https://*.exlibrisgroup.com"
+         "blob:"
       ],
       "sandbox": {
          "downloads": true

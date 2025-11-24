@@ -18,7 +18,8 @@
    },
    "contentSecurity": {
       "frameSrc": [
-         "*.exlibrisgroup.com"
+         "*.exlibrisgroup.com",
+         "blob:"
       ],
       "sandbox": {
          "downloads": true

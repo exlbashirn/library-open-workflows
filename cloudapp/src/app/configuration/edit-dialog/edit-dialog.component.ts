@@ -4,7 +4,7 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { isEmpty, isEqual, pick } from 'lodash';
 import { forkJoin } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
-import { AppService, N8nFormItem, N8nFormTriggeredWorkflow, RoleType } from '../../app.service';
+import { AppService, N8nFormItem, N8nFormTriggeredWorkflow, NetworkMember, RoleType } from '../../app.service';
 
 @Component({
   selector: 'app-edit-dialog',
@@ -16,7 +16,9 @@ export class EditDialogComponent implements OnInit {
   formGroup: FormGroup;
   formTriggeredWorkflows: N8nFormTriggeredWorkflow[] = [];
   roleList: RoleType[];
+  networkMembersList: NetworkMember[] = [];
   selectedRolesNum = 0;
+  selectedNetworkMembersNum = 0;
   editMode = false;
 
   constructor(@Inject(MAT_DIALOG_DATA) private data: { form: N8nFormItem },
@@ -32,19 +34,23 @@ export class EditDialogComponent implements OnInit {
     this.editMode = !isEmpty(this.data?.form);
     forkJoin([
       this.appService.getFormTriggersFromInstance(),
-      this.appService.getRolesTypes()
-    ]).subscribe(([formTriggeredWorkflows, roleTypes]) => {
+      this.appService.getRolesTypes(),
+      this.appService.getNetworkMembers()
+    ]).subscribe(([formTriggeredWorkflows, roleTypes, networkMembers]) => {
       this.formTriggeredWorkflows = formTriggeredWorkflows;
       this.roleList = roleTypes;
+      this.networkMembersList = networkMembers;
     });
     if (this.editMode) {
       this.selectedRolesNum = form.roles?.length ?? 0;
+      this.updateNetworkMembersCount(form.networkMembers);
       this.initEditFormGroup(form);
     } else {
       this.initNewFormGroup(form);
     }
     this.initFormListenerForPath();
     this.initFormListenerForStatus(form);
+    this.initFormListenerForNetworkMembers();
   }
 
   addParam() {
@@ -70,6 +76,7 @@ export class EditDialogComponent implements OnInit {
         form.auth = this.formGroup.get('auth').value;
         form.roles = this.formGroup.get('roles').value ?? [];
         form.defaultParams = this.formGroup.get('defaultParams').value ?? [];
+        form.networkMembers = this.formGroup.get('networkMembers').value ?? [];
         form.modifiedBy = userId;
         form.modifiedDate = Date.now();
         if (!form.id) {
@@ -87,13 +94,45 @@ export class EditDialogComponent implements OnInit {
   private initFormListenerForStatus(form: N8nFormItem) {
     this.formGroup.valueChanges.pipe(debounceTime(100)).subscribe(value => {
       this.selectedRolesNum = value.roles?.length ?? 0;
-      const props: (keyof N8nFormItem)[] = ['name', 'description', 'roles', 'defaultParams'];
+      this.selectedNetworkMembersNum = value.networkMembers?.length ?? 0;
+      const props: (keyof N8nFormItem)[] = ['name', 'description', 'roles', 'defaultParams', 'networkMembers'];
       const now = pick(value, props);
       const original = Object.assign({ roles: [], defaultParams: [] }, pick(form, props));
       if (this.formGroup.dirty && isEqual(now, original)) {
         this.formGroup.markAsPristine();
       }
     });
+  }
+
+  private initFormListenerForNetworkMembers() {
+    this.formGroup.get('networkMembers')?.valueChanges.subscribe(value => {
+      this.updateNetworkMembersCount(value);
+    });
+  }
+
+  private updateNetworkMembersCount(members: string[] | null | undefined) {
+    if (members?.includes('ALL')) {
+      this.selectedNetworkMembersNum = this.networkMembersList.length;
+    } else {
+      this.selectedNetworkMembersNum = members?.length ?? 0;
+    }
+  }
+
+  onNetworkMembersChange(event: any) {
+    const selectedValues: string[] = event.value || [];
+    const previousValues: string[] = this.formGroup.get('networkMembers').value || [];
+    
+    if (selectedValues.includes('ALL') && !previousValues.includes('ALL')) {
+      this.formGroup.get('networkMembers').setValue(['ALL'], { emitEvent: false });
+    } else if (previousValues.includes('ALL') && selectedValues.length > 1) {
+      const newValues = selectedValues.filter(v => v !== 'ALL');
+      this.formGroup.get('networkMembers').setValue(newValues, { emitEvent: false });
+    } else if (!selectedValues.includes('ALL') && selectedValues.length === this.networkMembersList.length) {
+      this.formGroup.get('networkMembers').setValue(['ALL'], { emitEvent: false });
+    }
+    
+    this.updateNetworkMembersCount(this.formGroup.get('networkMembers').value);
+    this.formGroup.markAsDirty();
   }
 
   private initFormListenerForPath() {
@@ -117,7 +156,8 @@ export class EditDialogComponent implements OnInit {
       auth: new FormControl(true),
       roles: new FormControl(form.roles ?? []),
       description: new FormControl(''),
-      defaultParams: new FormArray([])
+      defaultParams: new FormArray([]),
+      networkMembers: new FormControl(form.networkMembers ?? [])
     });
   }
 
@@ -135,7 +175,8 @@ export class EditDialogComponent implements OnInit {
       defaultParams: new FormArray(form.defaultParams?.map(({ key, value }) => new FormGroup({
         key: new FormControl(key, Validators.required),
         value: new FormControl(value, Validators.required)
-      })) ?? [])
+      })) ?? []),
+      networkMembers: new FormControl(form.networkMembers ?? [])
     });
   }
 

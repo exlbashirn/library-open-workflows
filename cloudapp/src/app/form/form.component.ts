@@ -40,14 +40,16 @@ export class FormComponent implements OnInit {
         }
         return [forms, n8nUrl, almaUrl, settings];
       })).subscribe(([forms, n8nUrl, almaUrl, settings]: [N8nFormItem[], string, string, any]) => {
-        this.form = forms.find(f => f.id === +params.get('id'));
+        const routeId = params.get('id');
+        this.form = forms.find(f => String(f.uniqueId) === routeId);
         this.notFound = !this.form;
         if (this.form) {
           this.appService.setTitle(this.form.name);
           const path = `/form/${this.form.path}`;
           let url: URL;
           if (this.form.auth || !n8nUrl) {
-            url = new URL(`/infra/watp${path}`, almaUrl);
+            const endpoint = this.form.isNetworkForm ? '/infra/watp-network' : '/infra/watp';
+            url = new URL(`${endpoint}${path}`, almaUrl);
           } else {
             const _n8nUrl = new URL(n8nUrl);
             url = new URL(_n8nUrl.pathname !== '/' ? _n8nUrl.pathname + path : path, _n8nUrl.origin);

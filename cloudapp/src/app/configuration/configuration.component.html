@@ -20,7 +20,7 @@
         <mat-card [style.margin.px]="5">
             <mat-card-header>
                 <mat-card-title>
-                    @if (form.auth || form.defaultParams?.length > 0) {
+                    @if (form.auth || form.defaultParams?.length > 0 || (form.networkMembers && form.networkMembers.length > 0)) {
                         <div>
                             @if (form.auth) {
                                 @if (form.auth) {
@@ -30,6 +30,15 @@
                                 @if (form.roles?.length > 0) {
                                     <mat-icon [transform]="true" [style.color]="'#0e7bba'"
                                         matTooltip="This form is restricted to specific roles">security</mat-icon>
+                                }
+                            }
+                            @if (form.networkMembers?.length > 0) {
+                                @if (form.networkMembers.includes('ALL')) {
+                                    <mat-icon [transform]="true" [style.color]="'#4caf50'"
+                                        matTooltip="This form is available to all network members">groups</mat-icon>
+                                } @else {
+                                    <mat-icon [transform]="true" [style.color]="'#4caf50'"
+                                        [matTooltip]="'This form is available to ' + form.networkMembers.length + ' network member(s)'">group</mat-icon>
                                 }
                             }
                             @if (form.defaultParams?.length > 0) {

@@ -11,6 +11,7 @@ interface CodeValue {
 }
 
 export type RoleType = CodeValue;
+export type NetworkMember = CodeValue;
 
 export interface N8nFormItem {
     id: number,
@@ -24,7 +25,10 @@ export interface N8nFormItem {
     formWorkflow: N8nFormTriggeredWorkflow,
     auth: boolean,
     roles: string[],
-    defaultParams?: any
+    defaultParams?: any,
+    networkMembers?: string[],
+    isNetworkForm?: boolean,
+    uniqueId?: string | number  // Used for routing to avoid ID conflicts
 }
 
 export interface N8nFormTriggeredWorkflow {
@@ -55,6 +59,7 @@ export class AppService {
     private formTriggeredWorkflows: Promise<N8nFormTriggeredWorkflow[]>;
     private roleTypes: Promise<RoleType[]>;
     private userRoles: Promise<string[]>;
+    private networkMembers: Promise<NetworkMember[]>;
 
     constructor(private configService: CloudAppConfigService,
         private eventsService: CloudAppEventsService,
@@ -96,6 +101,14 @@ export class AppService {
     getRolesTypes() {
         this.roleTypes = this.roleTypes ?? firstValueFrom(this.restService.call('/user-roles/types'));
         return from(this.roleTypes);
+    }
+
+    getNetworkMembers() {
+        this.networkMembers = this.networkMembers ?? firstValueFrom(
+            this.restService.call('/conf/mapping-tables/ConsortiaMembers').pipe(map(
+                (data: any) => data.row.filter((r: any) => !!r.enabled).map((r: any) => ({ code: r.column0, value: r.column2 }))
+            )));
+        return this.networkMembers;
     }
 
     getCurrentUserId() {
@@ -155,10 +168,32 @@ export class AppService {
     getUserAccessibleForms() {
         return forkJoin([
             this.getForms(),
+            this.getNetworkForms(),
             this.getCurrentUserRoles()
-        ]).pipe(map(([forms, userRoles]) => {
-            return forms?.filter(f => !f.roles || f.roles.length === 0 || f.roles.some(r => userRoles.indexOf(r) > -1)) ?? [];
+        ]).pipe(map(([forms, networkForms, userRoles]) => {
+            const roleFilter = f => !f.roles || f.roles.length === 0 || f.roles.some(r => userRoles.indexOf(r) > -1);
+            const accessibleForms = forms?.filter(roleFilter) ?? [];
+            const accessibleNetworkForms = networkForms?.filter(roleFilter) ?? [];
+            
+            // Mark network forms and create unique IDs
+            accessibleForms.forEach(f => f.uniqueId = f.id);
+            accessibleNetworkForms.forEach(f => {
+                f.isNetworkForm = true;
+                f.uniqueId = `network-${f.id}`;
+            });
+            
+            // Combine and sort by name
+            const allForms = [...accessibleForms, ...accessibleNetworkForms];
+            allForms.sort((a, b) => a.name.localeCompare(b.name));
+            
+            return allForms;
         }));
+    }
+
+    getNetworkForms(): Observable<N8nFormItem[]> {
+        return this.configService.get().pipe(
+            map(conf => cloneDeep(conf['networkForms'] ?? []))
+        );
     }
 
     loadForms() {

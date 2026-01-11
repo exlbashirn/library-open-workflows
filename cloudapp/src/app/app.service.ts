@@ -106,7 +106,7 @@ export class AppService {
     getNetworkMembers() {
         this.networkMembers = this.networkMembers ?? firstValueFrom(
             this.restService.call('/conf/mapping-tables/ConsortiaMembers').pipe(map(
-                (data: any) => data.row.filter((r: any) => !!r.enabled).map((r: any) => ({ code: r.column0, value: r.column2 }))
+                (data: any) => data.row?.filter((r: any) => !!r.enabled).map((r: any) => ({ code: r.column0, value: r.column2 })) ?? []
             )));
         return this.networkMembers;
     }

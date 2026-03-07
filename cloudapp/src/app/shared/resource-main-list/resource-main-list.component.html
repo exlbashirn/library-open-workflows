@@ -1,0 +1,31 @@
+@if (items.length > searchThreshold) {
+  <mat-form-field class="search-field">
+    <mat-label>Search</mat-label>
+    <input matInput type="text" [ngModel]="searchValue" (ngModelChange)="onSearchChange($event)">
+    @if (searching) {
+      <mat-spinner matSuffix diameter="16"></mat-spinner>
+    } @else if (searchValue) {
+      <button matSuffix mat-icon-button aria-label="Clear" (click)="onClearSearch()">
+        <mat-icon>close</mat-icon>
+      </button>
+    }
+  </mat-form-field>
+}
+
+@if (items.length > 0) {
+  <mat-action-list>
+    @for (item of items; track item; let i = $index) {
+      <button mat-list-item [routerLink]="getRoute(item)" [matTooltip]="getTooltip(item)" [matTooltipShowDelay]="2000">
+        @if (isNetworkItem(item)) {
+          <mat-icon matListItemIcon [style.color]="'#4caf50'" [matTooltip]="getNetworkTooltip()">language</mat-icon>
+        }
+        <h3 matListItemTitle>{{i + 1}}. {{item.name}}</h3>
+        <p matListItemLine>
+          <span>{{getTooltip(item)}}</span>
+        </p>
+      </button>
+    }
+  </mat-action-list>
+} @else {
+  <app-empty-list text="No items available"></app-empty-list>
+}

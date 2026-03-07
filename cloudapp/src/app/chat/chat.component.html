@@ -1,0 +1,14 @@
+<app-top-menu></app-top-menu>
+
+<iframe *ngIf="chat && !notFound" [src]="url" (load)="onIframeLoad()"
+  [style.visibility]="loading ? 'hidden' : 'visible'"></iframe>
+
+@if (loading && !notFound) {
+<div class="loading-shade">
+    <mat-spinner diameter="50"></mat-spinner>
+</div>
+}
+
+@if (notFound) {
+<p>Could not find the requested chat</p>
+}

@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { debounce } from 'lodash';
 import { forkJoin } from 'rxjs';
-import { AppService, N8nFormItem } from '../app.service';
+import { AppService, N8nChatItem, N8nFormItem, ResourceType } from '../app.service';
 
 @Component({
   selector: 'app-main',
@@ -10,26 +10,57 @@ import { AppService, N8nFormItem } from '../app.service';
 })
 export class MainComponent implements OnInit, OnDestroy {
 
-  loading = false;
+  loading = true;
+  loadError = false;
   searching = false;
-  searchValue: string;
-  forms: N8nFormItem[];
+  searchValue = '';
 
-  private _forms: N8nFormItem[];
+  get activeTab(): ResourceType { return this.appService.activeResourceTab; }
+  get activeTabIndex(): number { return this.activeTab === 'form' ? 0 : 1; }
 
-  constructor(
-    private appService: AppService
-  ) { }
+  forms: N8nFormItem[] = [];
+  chats: N8nChatItem[] = [];
+
+  private _forms: N8nFormItem[] = [];
+  private _chats: N8nChatItem[] = [];
+
+  constructor(private appService: AppService) { }
 
   ngOnInit() {
-    this.appService.getUserAccessibleForms().subscribe(forms => {
-      this._forms = forms;
-      this.forms = [...forms];
-      this.loading = false;
-    })
+    this.loading = true;
+    this.loadError = false;
+    forkJoin([
+      this.appService.getUserAccessibleForms(),
+      this.appService.getUserAccessibleChats()
+    ]).subscribe({
+      next: ([forms, chats]) => {
+        this._forms = forms;
+        this._chats = chats;
+        this.forms = [...forms];
+        this.chats = [...chats];
+        this.appService.autoSelectTab(forms.length, chats.length);
+        this.loading = false;
+      },
+      error: () => {
+        this.loadError = true;
+        this.loading = false;
+      }
+    });
   }
 
-  ngOnDestroy(): void {
+  ngOnDestroy(): void { }
+
+  retryLoad() {
+    this.ngOnInit();
+  }
+
+  onTabChange(index: number) {
+    this.appService.tabExplicitlySelected = true;
+    this.appService.activeResourceTab = index === 0 ? 'form' : 'chat';
+    // Search state resets on tab switch
+    this.filterList.cancel();
+    this.clearSearch();
+    this.searching = false;
   }
 
   onSearchChange(searchValue: string) {
@@ -47,15 +78,22 @@ export class MainComponent implements OnInit, OnDestroy {
   }
 
   filterList = debounce(() => {
-    this.forms = this._forms.filter(f => {
-      return f.name.toLowerCase().indexOf(this.searchValue.toLowerCase()) > -1
-        || f.description.toLowerCase().indexOf(this.searchValue.toLowerCase()) > -1
-    });
+    const term = this.searchValue.toLowerCase();
+    if (this.appService.activeResourceTab === 'form') {
+      this.forms = this._forms.filter(f =>
+        f.name.toLowerCase().includes(term) || f.description.toLowerCase().includes(term)
+      );
+    } else {
+      this.chats = this._chats.filter(c =>
+        c.name.toLowerCase().includes(term) || c.description.toLowerCase().includes(term)
+      );
+    }
     this.searching = false;
-  }, 1000)
+  }, 1000);
 
   clearSearch() {
     this.forms = [...this._forms];
+    this.chats = [...this._chats];
     this.searchValue = '';
   }
 

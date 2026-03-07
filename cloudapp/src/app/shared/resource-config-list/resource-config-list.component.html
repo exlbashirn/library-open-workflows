@@ -1,0 +1,60 @@
+@if (items.length === 0) {
+  <app-empty-list text="Add items to the list."></app-empty-list>
+} @else {
+  @for (item of items; track item) {
+    <mat-card [style.margin.px]="5">
+      <mat-card-header>
+        <mat-card-title>
+          @if (showMetadata(item)) {
+            <div>
+              @if (showAuth(item)) {
+                <mat-icon [transform]="true" [style.color]="'goldenrod'"
+                  [matTooltip]="'This ' + (isFormResource ? 'form' : 'chat') + ' will be accessed with Alma authentication'">lock</mat-icon>
+                @if (hasRoles(item)) {
+                  <mat-icon [transform]="true" [style.color]="'#0e7bba'"
+                    [matTooltip]="'This ' + (isFormResource ? 'form' : 'chat') + ' is restricted to specific roles'">security</mat-icon>
+                }
+              }
+
+              @if (hasNetworkMembers(item)) {
+                @if (isAllNetworkMembers(item)) {
+                  <mat-icon [transform]="true" [style.color]="'#4caf50'"
+                    [matTooltip]="'This ' + (isFormResource ? 'form' : 'chat') + ' is available to all network members'">groups</mat-icon>
+                } @else {
+                  <mat-icon [transform]="true" [style.color]="'#4caf50'"
+                    [matTooltip]="'This ' + (isFormResource ? 'form' : 'chat') + ' is available to ' + getNetworkMembersCount(item) + ' network member(s)'">group</mat-icon>
+                }
+              }
+
+              @if (hasDefaultParams(item)) {
+                <mat-icon [transform]="true" [style.color]="'darkgrey'"
+                  matTooltip="This form has default parameters set">list_alt</mat-icon>
+              }
+            </div>
+          }
+          {{ item.name }}
+        </mat-card-title>
+        <mat-card-subtitle>
+          <div>{{ getPath(item) }}<br />{{ getWorkflowName(item) }}</div>
+        </mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content>
+        <p>{{ item.description }}</p>
+      </mat-card-content>
+
+      <mat-card-actions>
+        @if (!saving) {
+          <div>
+            <button mat-icon-button (click)="onEdit(item)">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button class="warn-btn" (click)="onDelete(item)">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        }
+      </mat-card-actions>
+    </mat-card>
+  }
+}

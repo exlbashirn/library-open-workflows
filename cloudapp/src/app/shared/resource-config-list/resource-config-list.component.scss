@@ -1,0 +1,43 @@
+mat-card:hover mat-card-actions {
+  visibility: visible;
+  pointer-events: all;
+}
+
+mat-card-actions {
+  visibility: hidden;
+  pointer-events: none;
+  min-height: 0;
+  padding: 0;
+
+  > div {
+    display: block;
+    position: absolute;
+    top: 5px;
+    right: 2px;
+    text-align: right;
+  }
+}
+
+mat-card-header {
+  padding: 16px;
+
+  mat-card-title {
+    display: flex;
+
+    > div:nth-child(1) {
+      display: flex;
+      margin-right: 7px;
+      align-items: center;
+
+      mat-icon {
+        font-size: 18px;
+        height: 18px;
+        width: 18px;
+      }
+    }
+  }
+}
+
+mat-card-content {
+  padding-bottom: 16px;
+}

@@ -21,7 +21,7 @@
                     {{ form.name }}
                 </mat-card-title>
                 <mat-card-subtitle>
-                    <div>{{ form.formWorkflow.name}}</div>
+                    <div>{{ (form.webhookWorkflow ?? form.formWorkflow)?.name }}</div>
                 </mat-card-subtitle>
             </mat-card-header>
             <mat-card-actions>

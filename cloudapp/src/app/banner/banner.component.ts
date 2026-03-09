@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 @Component({
     selector: 'app-banner',
@@ -8,4 +8,10 @@ import { Component, Input } from '@angular/core';
 export class BannerComponent {
     @Input() message: string;
     @Input() show: boolean = true;
+    @Output() closed = new EventEmitter<void>();
+
+    close(): void {
+        this.show = false;
+        this.closed.emit();
+    }
 }

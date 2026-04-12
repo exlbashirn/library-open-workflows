@@ -1,0 +1,7 @@
+<mat-toolbar color="primary" class="banner" *ngIf="show">
+    <mat-icon class="banner-icon">info</mat-icon>
+    <span class="banner-text">{{ message }}</span>
+    <button mat-icon-button (click)="close()" aria-label="Close banner">
+        <mat-icon>close</mat-icon>
+    </button>
+</mat-toolbar>

@@ -1,7 +1,7 @@
-<h1 mat-dialog-title>Delete Entry</h1>
+<h1 mat-dialog-title>Delete {{ data.resourceType === 'form' ? 'Form' : 'Chat' }}</h1>
 <div mat-dialog-content>
     <p>
-        Are you sure you want to delete '{{data.form.name}}'?
+        Are you sure you want to delete '{{data.item.name}}'?
     </p>
 </div>
 <div mat-dialog-actions [align]="'end'">

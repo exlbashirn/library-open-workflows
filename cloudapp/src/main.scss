@@ -1,12 +1,14 @@
 @import "./app/main/main.component.theme";
 @import "./app/configuration/configuration.component.theme";
 @import "./app/settings/settings.component.theme";
+@import "./app/banner/banner.component.theme";
 
 @mixin themed-styles($theme, $typography) {
     /* Include themed component mixins or theme dependent styles here */
     @include main-component-theme($theme, $typography);
     @include configuration-component-theme($theme, $typography);
     @include settings-component-theme($theme, $typography);
+    @include banner-component-theme($theme, $typography);
 }
 
 @mixin global-styles {

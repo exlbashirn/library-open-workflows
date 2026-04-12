@@ -22,7 +22,8 @@
          "blob:"
       ],
       "sandbox": {
-         "downloads": true
+         "downloads": true,
+         "popups": true
       }
    }
 }

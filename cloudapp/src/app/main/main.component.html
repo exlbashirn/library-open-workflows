@@ -2,39 +2,40 @@
   <div class="loading-shade">
     <mat-spinner diameter="50"></mat-spinner>
   </div>
-} @else if (forms) {
-  @if (forms.length > 10) {
-    <mat-form-field class="search-field">
-      <mat-label>Search</mat-label>
-      <input matInput type="text" [ngModel]="searchValue" (ngModelChange)="onSearchChange($event)">
-      @if (searching) {
-        <mat-spinner *ngIf="searching" matSuffix diameter="16"></mat-spinner>
-      } @else if (searchValue) {
-        <button matSuffix mat-icon-button aria-label="Clear" (click)="clearSearch()">
-          <mat-icon>close</mat-icon>
-        </button>
-      }
-    </mat-form-field>
-  }
-  @if (forms.length > 0) {
-  <mat-action-list>
-    @for (form of forms; track form; let i = $index) {
-      <button mat-list-item [routerLink]="['/form', form.uniqueId]" [matTooltip]="form.description || form.formWorkflow.name"
-        [matTooltipShowDelay]="2000">
-        @if (form.isNetworkForm) {
-          <mat-icon matListItemIcon [style.color]="'#4caf50'" matTooltip="Network Form">language</mat-icon>
-        }
-        <h3 matListItemTitle>{{i+1}}. {{form.name}}</h3>
-        <p matListItemLine>
-          <span>{{form.description || form.formWorkflow.name}}</span>
-        </p>
-      </button>
-    }
-  </mat-action-list>
-  } @else {
-    <div id="emptyList">
-      <span class="uxf-icon uxf-list" style="font-size: 3em;"></span>
-      <div>No items available</div>
-    </div>
-  }
+} @else if (loadError) {
+  <app-error-state message="Failed to load items. Please try again." (retry)="retryLoad()"></app-error-state>
+} @else {
+  <mat-tab-group [selectedIndex]="activeTabIndex" [dynamicHeight]="true" animationDuration="300ms" (selectedIndexChange)="onTabChange($event)">
+
+    <!-- ==================== FORMS TAB ==================== -->
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <app-resource-tab-label icon="assignment" title="Forms" [count]="forms.length"></app-resource-tab-label>
+      </ng-template>
+      <app-resource-main-list
+        [items]="forms"
+        resourceType="form"
+        [searchValue]="searchValue"
+        [searching]="searching"
+        (searchChange)="onSearchChange($event)"
+        (clearSearch)="clearSearch()">
+      </app-resource-main-list>
+    </mat-tab>
+
+    <!-- ==================== CHATS TAB ==================== -->
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <app-resource-tab-label icon="chat" title="Chats" [count]="chats.length"></app-resource-tab-label>
+      </ng-template>
+      <app-resource-main-list
+        [items]="chats"
+        resourceType="chat"
+        [searchValue]="searchValue"
+        [searching]="searching"
+        (searchChange)="onSearchChange($event)"
+        (clearSearch)="clearSearch()">
+      </app-resource-main-list>
+    </mat-tab>
+
+  </mat-tab-group>
 }

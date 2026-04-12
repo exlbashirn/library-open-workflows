@@ -1,8 +1,10 @@
-<h1 mat-dialog-title>Edit Entry</h1>
+<h1 mat-dialog-title>{{ editMode ? 'Edit' : 'Add' }} {{ resourceType === 'form' ? 'Form' : 'Chat' }}</h1>
 <mat-dialog-content>
     <form [formGroup]="formGroup">
+
+        @if (resourceType === 'form') {
         <mat-form-field>
-            <mat-label>Form</mat-label>
+            <mat-label>Form Workflow</mat-label>
             <mat-select formControlName="form" required>
                 @for (wflow of formTriggeredWorkflows; track wflow) {
                 <mat-option [value]="wflow.id + '+' + wflow.formPath">
@@ -11,6 +13,19 @@
                 }
             </mat-select>
         </mat-form-field>
+        } @else {
+        <mat-form-field>
+            <mat-label>Chat Workflow</mat-label>
+            <mat-select formControlName="form" required>
+                @for (wflow of chatTriggeredWorkflows; track wflow) {
+                <mat-option [value]="wflow.id + '+' + wflow.webhookId">
+                    {{wflow.name}}
+                </mat-option>
+                }
+            </mat-select>
+        </mat-form-field>
+        }
+
         <mat-form-field>
             <mat-label>Path</mat-label>
             <input matInput formControlName="path" required>
@@ -23,6 +38,7 @@
             <mat-label>Description</mat-label>
             <textarea matInput formControlName="description"></textarea>
         </mat-form-field>
+
         @if (formGroup.get('auth').value) {
         <mat-form-field>
             <mat-label>Roles</mat-label>
@@ -34,6 +50,7 @@
             <mat-hint [align]="'end'">{{ selectedRolesNum }} roles selected</mat-hint>
         </mat-form-field>
         }
+
         @if (networkMembersList.length > 0) {
         <mat-form-field>
             <mat-label>Network Members</mat-label>
@@ -46,6 +63,8 @@
             <mat-hint [align]="'end'">{{ selectedNetworkMembersNum }} members selected</mat-hint>
         </mat-form-field>
         }
+
+        @if (resourceType === 'form') {
         <mat-accordion [style.margin]="'10px 0'" [style.display]="'block'">
             <mat-expansion-panel>
                 <mat-expansion-panel-header>
@@ -79,6 +98,8 @@
                 <button mat-raised-button color="primary" type="button" (click)="addParam()" [style.width]="'100%'">Add</button>
             </mat-expansion-panel>
         </mat-accordion>
+        }
+
     </form>
 </mat-dialog-content>
 <mat-dialog-actions [align]="'end'">

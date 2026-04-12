@@ -3,73 +3,44 @@
 </div>
 <app-top-menu [disabled]="saving">
     <ng-container buttons>
-        <button mat-flat-button [disabled]="saving" color="primary" (click)="onEntryAdd()">
+        <button mat-flat-button [disabled]="saving" color="primary" (click)="onEntryAdd(activeTab)">
             <mat-icon style="margin: 0">add</mat-icon>
         </button>
     </ng-container>
 </app-top-menu>
-@if (forms) {
-    @if (forms.length === 0) {
-    <div id="emptyList">
-        <span class="uxf-icon uxf-list" style="font-size: 3em;"></span>
-        <div>Add items to the list.</div>
-    </div>
-    } @else {
-    <ng-container>
-        @for (form of forms; track form) {
-        <mat-card [style.margin.px]="5">
-            <mat-card-header>
-                <mat-card-title>
-                    @if (form.auth || form.defaultParams?.length > 0 || (form.networkMembers && form.networkMembers.length > 0)) {
-                        <div>
-                            @if (form.auth) {
-                                @if (form.auth) {
-                                    <mat-icon [transform]="true" [style.color]="'goldenrod'"
-                                        matTooltip="This form will be accessed with Alma authentication">lock</mat-icon>
-                                }
-                                @if (form.roles?.length > 0) {
-                                    <mat-icon [transform]="true" [style.color]="'#0e7bba'"
-                                        matTooltip="This form is restricted to specific roles">security</mat-icon>
-                                }
-                            }
-                            @if (form.networkMembers?.length > 0) {
-                                @if (form.networkMembers.includes('ALL')) {
-                                    <mat-icon [transform]="true" [style.color]="'#4caf50'"
-                                        matTooltip="This form is available to all network members">groups</mat-icon>
-                                } @else {
-                                    <mat-icon [transform]="true" [style.color]="'#4caf50'"
-                                        [matTooltip]="'This form is available to ' + form.networkMembers.length + ' network member(s)'">group</mat-icon>
-                                }
-                            }
-                            @if (form.defaultParams?.length > 0) {
-                                <mat-icon [transform]="true" [style.color]="'darkgrey'"
-                                    matTooltip="This form has default parameters set">list_alt</mat-icon>
-                            }
-                        </div>
-                    }
-                    {{ form.name }}
-                </mat-card-title>
-                <mat-card-subtitle>
-                    <div>{{ form.path }}<br />{{ form.formWorkflow.name}}</div>
-                </mat-card-subtitle>
-            </mat-card-header>
-            <mat-card-content>
-                <p>{{ form.description }}</p>
-            </mat-card-content>
-            <mat-card-actions>
-                @if (!saving) {
-                <div>
-                    <button mat-icon-button (click)="onEntryEdit(form)">
-                        <mat-icon>edit</mat-icon>
-                    </button>
-                    <button mat-icon-button class="warn-btn" (click)="onEntryDelete(form)">
-                        <mat-icon>delete</mat-icon>
-                    </button>
-                </div>
-                }
-            </mat-card-actions>
-        </mat-card>
-        }
-    </ng-container>
-    }
+
+@if (loadError) {
+<app-error-state message="Failed to load configuration. Please try again." (retry)="retryLoad()"></app-error-state>
+} @else {
+<mat-tab-group [selectedIndex]="activeTabIndex" [dynamicHeight]="true" animationDuration="300ms" (selectedIndexChange)="onTabChange($event)">
+
+    <!-- ==================== FORMS TAB ==================== -->
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <app-resource-tab-label icon="assignment" title="Forms" [count]="forms.length"></app-resource-tab-label>
+      </ng-template>
+      <app-resource-config-list
+        [items]="forms"
+        resourceType="form"
+        [saving]="saving"
+        (edit)="onEntryEdit($event, 'form')"
+        (remove)="onEntryDelete($event, 'form')">
+      </app-resource-config-list>
+    </mat-tab>
+
+    <!-- ==================== CHATS TAB ==================== -->
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <app-resource-tab-label icon="chat" title="Chats" [count]="chats.length"></app-resource-tab-label>
+      </ng-template>
+      <app-resource-config-list
+        [items]="chats"
+        resourceType="chat"
+        [saving]="saving"
+        (edit)="onEntryEdit($event, 'chat')"
+        (remove)="onEntryDelete($event, 'chat')">
+      </app-resource-config-list>
+    </mat-tab>
+
+</mat-tab-group>
 }

@@ -21,6 +21,9 @@ import { ResourceConfigListComponent } from './shared/resource-config-list/resou
 import { ResourceMainListComponent } from './shared/resource-main-list/resource-main-list.component';
 import { ResourceTabLabelComponent } from './shared/resource-tab-label/resource-tab-label.component';
 import { TopMenuComponent } from './top-menu/top-menu.component';
+import { EmptyListComponent } from './shared/empty-list/empty-list.component';
+import { OperationStatusBannerComponent } from './shared/operation-status-banner/operation-status-banner.component';
+import { IframeHostComponent } from './shared/iframe-host/iframe-host.component';
 
 export const matTooltipDefaultOptions: MatTooltipDefaultOptions = {
     ...MAT_TOOLTIP_DEFAULT_OPTIONS_FACTORY(),
@@ -44,6 +47,9 @@ export const matTooltipDefaultOptions: MatTooltipDefaultOptions = {
         ResourceTabLabelComponent,
         ErrorStateComponent,
         BannerComponent,
+        EmptyListComponent,
+        OperationStatusBannerComponent,
+        IframeHostComponent
     ],
     bootstrap: [AppComponent],
     imports: [

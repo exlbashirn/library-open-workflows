@@ -14,6 +14,7 @@ import {
   ResourceType,
   RoleType
 } from '../../app.service';
+import { EntityType } from '@exlibris/exl-cloudapp-angular-lib';
 
 @Component({
   selector: 'app-edit-dialog',
@@ -27,6 +28,7 @@ export class EditDialogComponent implements OnInit {
   chatTriggeredWorkflows: N8nChatTriggeredWorkflow[] = [];
   roleList: RoleType[];
   networkMembersList: NetworkMember[] = [];
+  entityTypeList = Object.values(EntityType);
   selectedRolesNum = 0;
   selectedNetworkMembersNum = 0;
   editMode = false;
@@ -97,6 +99,8 @@ export class EditDialogComponent implements OnInit {
         item.description = this.formGroup.get('description').value;
         item.roles = this.formGroup.get('roles').value ?? [];
         item.networkMembers = this.formGroup.get('networkMembers').value ?? [];
+        item.includePageEntities = this.formGroup.get('includePageEntities').value ?? false;
+        item.allowedEntityTypes = this.formGroup.get('allowedEntityTypes').value ?? [];
         item.modifiedBy = userId;
         item.modifiedDate = Date.now();
         if (!item.id) {
@@ -114,7 +118,7 @@ export class EditDialogComponent implements OnInit {
           }
         } else {
           const chat = item as N8nChatItem;
-          (chat as any).auth = true; // always true; cast needed due to literal type
+          chat.auth = true; // always true
           if (!chat.webhookWorkflow) {
             chat.webhookWorkflow = this.chatTriggeredWorkflows
               .find(wf => `${wf.id}+${wf.webhookId}` === this.formGroup.get('form').value);
@@ -134,7 +138,9 @@ export class EditDialogComponent implements OnInit {
       auth: new FormControl(true),
       roles: new FormControl(item.roles ?? []),
       description: new FormControl(''),
-      networkMembers: new FormControl(item.networkMembers ?? [])
+      networkMembers: new FormControl(item.networkMembers ?? []),
+      includePageEntities: new FormControl(false),
+      allowedEntityTypes: new FormControl([])
     };
 
     if (this.data.resourceType === 'form') {
@@ -165,7 +171,9 @@ export class EditDialogComponent implements OnInit {
           key: new FormControl(key, Validators.required),
           value: new FormControl(value, Validators.required)
         })) ?? []),
-        networkMembers: new FormControl(form.networkMembers ?? [])
+        networkMembers: new FormControl(form.networkMembers ?? []),
+        includePageEntities: new FormControl(form.includePageEntities ?? false),
+        allowedEntityTypes: new FormControl(form.allowedEntityTypes ?? [])
       });
     } else {
       const chat = item as N8nChatItem;
@@ -179,7 +187,9 @@ export class EditDialogComponent implements OnInit {
         auth: new FormControl(true), // always true; not rendered in template
         roles: new FormControl(chat.roles ?? []),
         description: new FormControl(chat.description ?? ''),
-        networkMembers: new FormControl(chat.networkMembers ?? [])
+        networkMembers: new FormControl(chat.networkMembers ?? []),
+        includePageEntities: new FormControl(chat.includePageEntities ?? false),
+        allowedEntityTypes: new FormControl(chat.allowedEntityTypes ?? [])
       });
     }
   }
@@ -211,7 +221,7 @@ export class EditDialogComponent implements OnInit {
       this.selectedRolesNum = value.roles?.length ?? 0;
       this.selectedNetworkMembersNum = value.networkMembers?.length ?? 0;
 
-      const props: string[] = ['name', 'description', 'roles', 'networkMembers'];
+      const props: string[] = ['name', 'description', 'roles', 'networkMembers', 'includePageEntities', 'allowedEntityTypes'];
       if (this.data.resourceType === 'form') {
         props.push('defaultParams');
       }

@@ -1,0 +1,90 @@
+@use 'sass:map';
+
+$_font-size:  0.9em;
+$_icon-size:      1.25em; // status icon slot (spinner / check / error)
+$_lead-icon-size: 1.5em;  // lead icon — slightly larger to visually match
+
+$_states: (
+  loading: (bg: #e8eaf6, fg: #283593, icon: #283593),
+  success: (bg: #e8f5e9, fg: #1b5e20, icon: #2e7d32),
+  error:   (bg: #fce4ec, fg: #b71c1c, icon: #c62828),
+);
+
+:host {
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  font-size: $_font-size; // establishes the em context for the whole component
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+
+.operation-status-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  padding: 0.6em 1.25em;
+  font-weight: 500;
+  line-height: 1.54;
+  transition: background-color 300ms ease, color 300ms ease;
+
+  @each $name, $values in $_states {
+    &.banner--#{$name} {
+      background-color: map.get($values, bg);
+      color: map.get($values, fg);
+      --mdc-circular-progress-active-indicator-color: #{map.get($values, icon)};
+    }
+  }
+
+  &.banner--loading {
+    background-image: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.45) 50%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.6s linear infinite;
+  }
+}
+
+%icon-slot {
+  flex-shrink: 0;
+  font-size: $_icon-size;
+  width: 1em;
+  height: 1em;
+}
+
+.banner__lead-icon {
+  @extend %icon-slot;
+  font-size: $_lead-icon-size;
+  width: 1em;
+  height: 1em;
+}
+
+.banner__icon {
+  @extend %icon-slot;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+
+  > * {
+    position: absolute;
+    font-size: 1em;
+    width: 1em;
+    height: 1em;
+    transition: opacity 250ms ease;
+  }
+}
+
+.banner__message {
+  flex: 1;
+}
+

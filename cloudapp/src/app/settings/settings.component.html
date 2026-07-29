@@ -15,7 +15,7 @@
             <mat-card-header>
                 <mat-card-title>
                     @if (settings.defaultParams?.[appService.getFormKey(form)]?.length > 0) {
-                        <mat-icon [transform]="true" [style.color]="'darkgrey'"
+                        <mat-icon [style.color]="'darkgrey'"
                             matTooltip="This form has personal default parameters set">list_alt</mat-icon>
                     }
                     {{ form.name }}

@@ -8,26 +8,26 @@
           @if (showMetadata(item)) {
             <div>
               @if (showAuth(item)) {
-                <mat-icon [transform]="true" [style.color]="'goldenrod'"
+                <mat-icon [style.color]="'goldenrod'"
                   [matTooltip]="'This ' + (isFormResource ? 'form' : 'chat') + ' will be accessed with Alma authentication'">lock</mat-icon>
                 @if (hasRoles(item)) {
-                  <mat-icon [transform]="true" [style.color]="'#0e7bba'"
+                  <mat-icon [style.color]="'#0e7bba'"
                     [matTooltip]="'This ' + (isFormResource ? 'form' : 'chat') + ' is restricted to specific roles'">security</mat-icon>
                 }
               }
 
               @if (hasNetworkMembers(item)) {
                 @if (isAllNetworkMembers(item)) {
-                  <mat-icon [transform]="true" [style.color]="'#4caf50'"
+                  <mat-icon [style.color]="'#4caf50'"
                     [matTooltip]="'This ' + (isFormResource ? 'form' : 'chat') + ' is available to all network members'">groups</mat-icon>
                 } @else {
-                  <mat-icon [transform]="true" [style.color]="'#4caf50'"
+                  <mat-icon [style.color]="'#4caf50'"
                     [matTooltip]="'This ' + (isFormResource ? 'form' : 'chat') + ' is available to ' + getNetworkMembersCount(item) + ' network member(s)'">group</mat-icon>
                 }
               }
 
               @if (hasDefaultParams(item)) {
-                <mat-icon [transform]="true" [style.color]="'darkgrey'"
+                <mat-icon [style.color]="'darkgrey'"
                   matTooltip="This form has default parameters set">list_alt</mat-icon>
               }
             </div>

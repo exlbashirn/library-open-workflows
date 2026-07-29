@@ -16,6 +16,7 @@ import { FormComponent } from './form/form.component';
 import { MainComponent } from './main/main.component';
 import { EditDialogComponent as SettingsEditDialogComponent } from './settings/edit-dialog/edit-dialog.component';
 import { SettingsComponent } from './settings/settings.component';
+import { EmptyListComponent } from './shared/empty-list/empty-list.component';
 import { ErrorStateComponent } from './shared/error-state/error-state.component';
 import { ResourceConfigListComponent } from './shared/resource-config-list/resource-config-list.component';
 import { ResourceMainListComponent } from './shared/resource-main-list/resource-main-list.component';
@@ -44,6 +45,7 @@ export const matTooltipDefaultOptions: MatTooltipDefaultOptions = {
         ResourceTabLabelComponent,
         ErrorStateComponent,
         BannerComponent,
+        EmptyListComponent,
     ],
     bootstrap: [AppComponent],
     imports: [

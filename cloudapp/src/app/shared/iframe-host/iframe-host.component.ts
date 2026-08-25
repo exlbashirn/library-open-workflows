@@ -2,7 +2,7 @@ import { Component, Input, OnInit, OnDestroy, ViewChild, ElementRef } from '@ang
 import { SafeResourceUrl } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { Observable, firstValueFrom } from 'rxjs';
-import { AppService, IframeHostItem, EntityResolutionResponse, EntityResolutionError } from '../../app.service';
+import { AppService, IframeHostItem, EntityResolutionReadyResponse, EntityResolutionResponse, EntityResolutionError } from '../../app.service';
 import { AlertService, Entity } from '@exlibris/exl-cloudapp-angular-lib';
 import { BannerState } from '../operation-status-banner/operation-status-banner.component';
 
@@ -12,6 +12,8 @@ export interface IframeHostContext {
 }
 
 export type IframeHostStrategy = (routeId: string) => Observable<IframeHostContext>;
+
+const ENTITY_RESOLUTION_TIMEOUT_MESSAGE_DURATION_MS = 5000;
 
 @Component({
   selector: 'app-iframe-host',
@@ -35,6 +37,8 @@ export class IframeHostComponent implements OnInit, OnDestroy {
 
   private pageEntities: Entity[] = [];
   private postMessageHandler: ((event: MessageEvent) => void) | null = null;
+  private entityResolutionRequestId = 0;
+  private timeoutBannerCloseTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -76,6 +80,10 @@ export class IframeHostComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    if (this.timeoutBannerCloseTimer) {
+      clearTimeout(this.timeoutBannerCloseTimer);
+      this.timeoutBannerCloseTimer = null;
+    }
     if (this.postMessageHandler) {
       window.removeEventListener('message', this.postMessageHandler);
       this.postMessageHandler = null;
@@ -89,7 +97,34 @@ export class IframeHostComponent implements OnInit, OnDestroy {
       return;
     }
 
+    if (message?.type === 'REQUEST_ENTITY_RESOLUTION_READY') {
+      this.sendResolutionResponse({
+        type: 'ENTITY_RESOLUTION_READY'
+      });
+      return;
+    }
+
+    if (message?.type === 'REQUEST_ENTITY_RESOLUTION_TIMEOUT') {
+      this.entityResolutionRequestId++;
+      this.bannerState = 'error';
+      this.bannerMessage = 'Timed out while waiting for page context...';
+      this.bannerOpen = true;
+      if (this.timeoutBannerCloseTimer) {
+        clearTimeout(this.timeoutBannerCloseTimer);
+      }
+      this.timeoutBannerCloseTimer = setTimeout(() => {
+        this.bannerOpen = false;
+        this.timeoutBannerCloseTimer = null;
+      }, ENTITY_RESOLUTION_TIMEOUT_MESSAGE_DURATION_MS);
+      return;
+    }
+
     if (message?.type === 'REQUEST_ENTITY_RESOLUTION') {
+      if (this.timeoutBannerCloseTimer) {
+        clearTimeout(this.timeoutBannerCloseTimer);
+        this.timeoutBannerCloseTimer = null;
+      }
+      const requestId = ++this.entityResolutionRequestId;
       if (!this.item?.includePageEntities) {
         this.sendResolutionResponse({
           type: 'ENTITY_RESOLUTION_ERROR',
@@ -109,6 +144,7 @@ export class IframeHostComponent implements OnInit, OnDestroy {
       this.bannerMessage = 'Getting page context data...';
       try {
         const resolvedData = await firstValueFrom(this.appService.resolveEntities(entitiesToResolve));
+        if (requestId !== this.entityResolutionRequestId) return;
         this.bannerState = 'success';
         this.bannerMessage = 'Page context data loaded';
         this.sendResolutionResponse({
@@ -116,6 +152,7 @@ export class IframeHostComponent implements OnInit, OnDestroy {
           payload: resolvedData
         });
       } catch (err) {
+        if (requestId !== this.entityResolutionRequestId) return;
         console.error('Error handling entity resolution request:', err);
         this.bannerState = 'error';
         this.bannerMessage = 'Failed to load page context data';
@@ -127,7 +164,9 @@ export class IframeHostComponent implements OnInit, OnDestroy {
           payload: entitiesToResolve
         });
       } finally {
-        this.bannerOpen = false;
+        if (requestId === this.entityResolutionRequestId) {
+          this.bannerOpen = false;
+        }
       }
     }
   }
@@ -137,7 +176,7 @@ export class IframeHostComponent implements OnInit, OnDestroy {
    * Target origin is '*' intentionally: the iframe may be served from a different
    * origin (n8n direct URL or Alma proxy) that is not statically known at call time.
    */
-  private sendResolutionResponse(response: EntityResolutionResponse | EntityResolutionError): void {
+  private sendResolutionResponse(response: EntityResolutionReadyResponse | EntityResolutionResponse | EntityResolutionError): void {
     if (!this.iframeElement?.nativeElement) return;
     this.iframeElement.nativeElement.contentWindow.postMessage(response, '*');
   }

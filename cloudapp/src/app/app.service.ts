@@ -33,6 +33,14 @@ export type NetworkMember = CodeValue;
 export type ResourceType = 'form' | 'chat';
 
 /** PostMessage types for iframe communication */
+export interface EntityResolutionReadyRequest {
+  type: 'REQUEST_ENTITY_RESOLUTION_READY';
+}
+
+export interface EntityResolutionReadyResponse {
+  type: 'ENTITY_RESOLUTION_READY';
+}
+
 export interface EntityResolutionRequest {
   type: 'REQUEST_ENTITY_RESOLUTION';
 }
@@ -49,7 +57,7 @@ export interface EntityResolutionError {
   payload?: any;
 }
 
-export type PostMessageFromIframe = EntityResolutionRequest;
+export type PostMessageFromIframe = EntityResolutionReadyRequest | EntityResolutionRequest;
 
 /** Minimal structural interface satisfied by both N8nFormItem and N8nChatItem,
  *  used to type the shared iframe host component without coupling it to either model. */

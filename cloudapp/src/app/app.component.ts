@@ -15,7 +15,7 @@ import { Component } from '@angular/core';
 export class AppComponent {
 
   showBanner = false;
-  bannerMessage = '';
+  bannerMessage = 'This version requires September 2026 release';
 
   constructor() {
   }

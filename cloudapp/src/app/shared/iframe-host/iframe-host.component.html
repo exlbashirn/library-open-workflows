@@ -1,0 +1,21 @@
+<app-top-menu></app-top-menu>
+
+<div class="iframe-container">
+  <app-operation-status-banner
+    [open]="bannerOpen"
+    [state]="bannerState"
+    [message]="bannerMessage"
+  ></app-operation-status-banner>
+  <iframe #iframe *ngIf="item" [src]="url" (load)="onIframeLoad()"
+    [style.visibility]="loading ? 'hidden' : 'visible'"></iframe>
+</div>
+
+@if (loading && !notFound) {
+<div class="loading-shade">
+  <mat-spinner diameter="50"></mat-spinner>
+</div>
+}
+
+@if (notFound) {
+<p>{{ notFoundMessage }}</p>
+}

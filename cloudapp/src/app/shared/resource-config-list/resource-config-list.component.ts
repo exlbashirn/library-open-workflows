@@ -32,10 +32,10 @@ export class ResourceConfigListComponent {
   showMetadata(item: ResourceItem) {
     if (this.isFormResource) {
       const form = item as N8nFormItem;
-      return !!(form.auth || (form.defaultParams?.length ?? 0) > 0 || (form.networkMembers?.length ?? 0) > 0);
+      return !!(form.auth || (form.defaultParams?.length ?? 0) > 0 || (form.networkMembers?.length ?? 0) > 0 || form.includePageEntities);
     }
     const chat = item as N8nChatItem;
-    return !!(chat.auth || (chat.networkMembers?.length ?? 0) > 0);
+    return !!(chat.auth || (chat.networkMembers?.length ?? 0) > 0 || chat.includePageEntities);
   }
 
   showAuth(item: ResourceItem) {
@@ -59,6 +59,10 @@ export class ResourceConfigListComponent {
 
   hasDefaultParams(item: ResourceItem) {
     return this.isFormResource && (((item as N8nFormItem).defaultParams?.length) ?? 0) > 0;
+  }
+
+  includesPageEntities(item: ResourceItem) {
+    return !!(item as N8nFormItem | N8nChatItem).includePageEntities;
   }
 
   getNetworkMembersCount(item: ResourceItem) {

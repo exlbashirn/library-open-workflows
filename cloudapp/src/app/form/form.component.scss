@@ -1,5 +1,12 @@
 iframe {
     width: 100%;
-    height: calc(100% - 56px);
+    height: 100%;
     border: none;
+}
+
+.iframe-container {
+    position: relative;
+    width: 100%;
+    height: calc(100% - 56px);
+    overflow: hidden;
 }

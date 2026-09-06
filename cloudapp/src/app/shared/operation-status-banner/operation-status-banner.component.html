@@ -1,0 +1,21 @@
+<div
+  class="operation-status-banner"
+  [class.banner--loading]="displayedState === 'loading'"
+  [class.banner--success]="displayedState === 'success'"
+  [class.banner--error]="displayedState === 'error'"
+  [@slideDown]="animationState"
+  role="status"
+  aria-live="polite"
+>
+  <mat-icon class="banner__lead-icon" aria-hidden="true">preview</mat-icon>
+  <span class="banner__icon" aria-hidden="true">
+    @if (displayedState === 'loading') {
+      <mat-spinner @fadeSwap diameter="16"></mat-spinner>
+    } @else if (displayedState === 'success') {
+      <mat-icon @fadeSwap>check_circle</mat-icon>
+    } @else if (displayedState === 'error') {
+      <mat-icon @fadeSwap>error</mat-icon>
+    }
+  </span>
+  <span class="banner__message">{{ displayedMessage }}</span>
+</div>

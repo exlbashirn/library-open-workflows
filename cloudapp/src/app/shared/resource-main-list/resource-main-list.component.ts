@@ -54,4 +54,8 @@ export class ResourceMainListComponent {
   getNetworkTooltip() {
     return this.isFormResource ? 'Network Form' : 'Network Chat';
   }
+
+  includesPageEntities(item: ResourceItem) {
+    return !!(item as N8nFormItem | N8nChatItem).includePageEntities;
+  }
 }

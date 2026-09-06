@@ -30,6 +30,11 @@
                 <mat-icon [style.color]="'darkgrey'"
                   matTooltip="This form has default parameters set">list_alt</mat-icon>
               }
+
+              @if (includesPageEntities(item)) {
+                <mat-icon [style.color]="'#9c27b0'"
+                  [matTooltip]="'This ' + (isFormResource ? 'form' : 'chat') + ' can access page entities'">preview</mat-icon>
+              }
             </div>
           }
           {{ item.name }}

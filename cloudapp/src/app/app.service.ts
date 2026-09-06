@@ -1,6 +1,6 @@
 
 import { Injectable } from '@angular/core';
-import { AlertService, CloudAppConfigService, CloudAppEventsService, CloudAppRestService } from '@exlibris/exl-cloudapp-angular-lib';
+import { AlertService, CloudAppConfigService, CloudAppEventsService, CloudAppRestService, Entity, EntityType, HttpMethod } from '@exlibris/exl-cloudapp-angular-lib';
 import { cloneDeep } from 'lodash';
 import { BehaviorSubject, firstValueFrom, forkJoin, from, Observable, of, timer } from 'rxjs';
 import { catchError, concatMap, map, retry, take, tap } from 'rxjs/operators';
@@ -32,7 +32,43 @@ export type RoleType = CodeValue;
 export type NetworkMember = CodeValue;
 export type ResourceType = 'form' | 'chat';
 
-export interface N8nFormItem {
+/** PostMessage types for iframe communication */
+export interface EntityResolutionReadyRequest {
+  type: 'REQUEST_ENTITY_RESOLUTION_READY';
+}
+
+export interface EntityResolutionReadyResponse {
+  type: 'ENTITY_RESOLUTION_READY';
+}
+
+export interface EntityResolutionRequest {
+  type: 'REQUEST_ENTITY_RESOLUTION';
+}
+
+export interface EntityResolutionResponse {
+  type: 'ENTITY_RESOLUTION_RESPONSE';
+  payload: any;
+}
+
+export interface EntityResolutionError {
+  type: 'ENTITY_RESOLUTION_ERROR';
+  code: 'ERR_DISABLED' | 'ERR_FAILED';
+  error: string;
+  payload?: any;
+}
+
+export type PostMessageFromIframe = EntityResolutionReadyRequest | EntityResolutionRequest;
+
+/** Minimal structural interface satisfied by both N8nFormItem and N8nChatItem,
+ *  used to type the shared iframe host component without coupling it to either model. */
+export interface IframeHostItem {
+    uniqueId?: string | number;
+    name: string;
+    includePageEntities?: boolean;
+    allowedEntityTypes?: EntityType[];
+}
+
+interface N8nBaseItem {
     id: number;
     name: string;
     description: string;
@@ -41,35 +77,28 @@ export interface N8nFormItem {
     createdBy: string;
     modifiedDate: number;
     modifiedBy: string;
-    formWorkflow: N8nFormTriggeredWorkflow;
-    /** Preferred accessor — falls back to formWorkflow for data saved before this field was introduced */
-    webhookWorkflow?: N8nFormTriggeredWorkflow;
     auth: boolean;
     roles: string[];
-    defaultParams?: any;
     networkMembers?: string[];
-    isNetworkForm?: boolean;
+    includePageEntities?: boolean;
+    allowedEntityTypes?: EntityType[];
     /** Used for routing to avoid ID conflicts between local and network items */
     uniqueId?: string | number;
 }
 
-export interface N8nChatItem {
-    id: number;
-    name: string;
-    description: string;
-    path: string;
-    createdDate: number;
-    createdBy: string;
-    modifiedDate: number;
-    modifiedBy: string;
-    webhookWorkflow: N8nChatTriggeredWorkflow;
+export interface N8nFormItem extends N8nBaseItem {
+    formWorkflow: N8nFormTriggeredWorkflow;
+    /** Preferred accessor — falls back to formWorkflow for data saved before this field was introduced */
+    webhookWorkflow?: N8nFormTriggeredWorkflow;
+    defaultParams?: any;
+    isNetworkForm?: boolean;
+}
+
+export interface N8nChatItem extends N8nBaseItem {
     /** Always true — Alma auth is always required for chats */
     auth: true;
-    roles: string[];
-    networkMembers?: string[];
+    webhookWorkflow: N8nChatTriggeredWorkflow;
     isNetworkChat?: boolean;
-    /** Used for routing to avoid ID conflicts between local and network items */
-    uniqueId?: string | number;
 }
 
 export interface N8nFormTriggeredWorkflow {
@@ -110,6 +139,9 @@ export class AppService {
     activeResourceTab: ResourceType = 'form';
     tabExplicitlySelected = false;
 
+    private entities: Entity[] = [];
+    private entities$ = new BehaviorSubject<Entity[]>([]);
+
     autoSelectTab(formsCount: number, chatsCount: number) {
         if (this.tabExplicitlySelected) return;
         if (formsCount === 0 && chatsCount > 0) {
@@ -144,6 +176,12 @@ export class AppService {
             map((data: any) => data.row.find(r => r.column0 === '02_wat_url').column2),
             catchError(() => of(null))
         ));
+        
+        // Subscribe to page entities
+        this.eventsService.entities$.subscribe(entities => {
+            this.entities = entities;
+            this.entities$.next(entities);
+        });
     }
 
     getAlmaUrl() {
@@ -152,6 +190,10 @@ export class AppService {
 
     getN8nInstanceUrl() {
         return from(this.n8nUrl);
+    }
+
+    getPageEntities(): Observable<Entity[]> {
+        return this.entities$;
     }
 
     /**
@@ -428,6 +470,32 @@ export class AppService {
     getFormKey(form: N8nFormItem) {
         const wf = form.webhookWorkflow ?? form.formWorkflow;
         return wf.id + '_' + wf.formPath + '_' + form.id;
+    }
+
+    /**
+     * Resolves page entities via the Alma entity resolver endpoint.
+     * This enriches entity data before sending to iframe components.
+     * 
+     * @param entities - Array of entities from page context
+     * @returns Observable of resolved entity data
+     * 
+     * Retry policy: Exponential backoff (max 3 retries)
+     */
+    resolveEntities(entities: Entity[]): Observable<any> {
+        if (!entities || entities.length === 0) {
+            return of({});
+        }
+
+        return this.restService.call({
+            method: HttpMethod.POST,
+            url: '/entity-resolver/resolve',
+            requestBody: { entities }
+        }).pipe(
+            retry({
+                count: 3,
+                delay: (_err: any, retryCount: number) => timer(Math.pow(2, retryCount - 1) * 1000)
+            })
+        );
     }
 
 }

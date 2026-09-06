@@ -1,13 +1,1 @@
-<app-top-menu></app-top-menu>
-
-<iframe *ngIf="form" [src]="url" (load)="onIframeLoad()" [style.visibility.hidden]="loading"></iframe>
-
-@if (loading) {
-<div class="loading-shade">
-    <mat-spinner diameter="50"></mat-spinner>
-</div>
-}
-
-@if (notFound) {
-<p>Could not find the requested from</p>
-}
+<app-iframe-host [strategy]="strategy" notFoundMessage="Could not find the requested form"></app-iframe-host>

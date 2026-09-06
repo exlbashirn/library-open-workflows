@@ -483,7 +483,6 @@ export class AppService {
      */
     resolveEntities(entities: Entity[]): Observable<any> {
         if (!entities || entities.length === 0) {
-            console.debug('No entities to resolve');
             return of({});
         }
 

@@ -23,8 +23,10 @@ export class FormComponent {
     this.strategy = (routeId) => forkJoin([
       this.appService.getUserAccessibleForms(),
       this.appService.getN8nInstanceUrl(),
+      this.appService.getAlmaUrl(),
       this.settingsService.get()
-    ]).pipe(map(([forms, n8nUrl, settings]: [N8nFormItem[], string, any]) => {
+    ]).pipe(map(([forms, n8nUrl, almaUrl, settings]: [N8nFormItem[], string, string, any]) => {
+      if (almaUrl?.endsWith("/")) almaUrl = almaUrl.slice(0, -1);
       if (n8nUrl?.endsWith('/')) n8nUrl = n8nUrl.slice(0, -1);
 
       const form = forms.find(f => String(f.uniqueId) === routeId);
@@ -34,7 +36,7 @@ export class FormComponent {
       let url: URL;
       if (form.auth || !n8nUrl) {
         const endpoint = form.isNetworkForm ? '/infra/watp-network' : '/infra/watp';
-        url = new URL(`${endpoint}${path}`, location.origin);
+        url = new URL(`${endpoint}${path}`, almaUrl);
       } else {
         const _n8nUrl = new URL(n8nUrl);
         url = new URL(_n8nUrl.pathname !== '/' ? _n8nUrl.pathname + path : path, _n8nUrl.origin);

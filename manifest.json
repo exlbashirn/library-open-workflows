@@ -23,7 +23,8 @@
       ],
       "sandbox": {
          "downloads": true,
-         "popups": true
+         "popups": true,
+         "popups-to-escape-sandbox": true
       }
    }
 }
